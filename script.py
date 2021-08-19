@@ -29,4 +29,8 @@ def main(argv):
     call([b])
 
 if __name__ == "__main__":
+    if len(sys.argv) < 5:
+        print("Not enough arguments!")
+    else
+        sys.exit()
    main(sys.argv[1:])
