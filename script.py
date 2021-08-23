@@ -11,7 +11,7 @@ import xml.etree.ElementTree as etree
 import pexpect
 from python_hosts import Hosts, HostsEntry
 
-def fetch_external_ip(type):
+def fetch_ip(type):
     url = 'http://' + ("ipv6" if type == "AAAA" else "ipv4") + '.myexternalip.com/raw'
     ip = urlopen(url).read().decode('utf-8')[:-1]
     return ip
@@ -24,8 +24,8 @@ def main(argv):
     password = argv[3]
 
     #prepare some authentication data
-    mysql_password = "password"
-    admin_password = "password"
+    mysql_password = "Qwe-123"
+    admin_password = "Qwe-123"
 
     # Generate a auth_string to connect to cPanel
     auth_string = 'Basic ' + base64.b64encode((CONFIG['username']+':'+CONFIG['password']).encode()).decode("utf-8")
@@ -33,11 +33,11 @@ def main(argv):
     # Show all arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('--ttl', default='300', help='Time To Live')
-    parser.add_argument('--type', default='CNAME', help='Type of record: A for IPV4 or AAAA for IPV6')
+    parser.add_argument('--type', default='CNAME', help='Type of record: A for IPV4 or AAAA for IPV6 or CNAME to alias existing record')
     parser.add_argument('--ip', help='The IPV4/IPV6 address (if known)')
     parser.add_argument('--value', help='The value of the CNAME (if known)')
     parser.add_argument('--name', help='Your record name, ie: ipv6.domain.com', required=True)
-    parser.add_argument('--domain', help='The domain name containing the record name', required=True)
+    parser.add_argument('--domain', help='The domain name containing the record name ie:[cselection].com', required=True)
     args = parser.parse_args()
 
     # Fetch existing DNS records
@@ -52,16 +52,18 @@ def main(argv):
     type = "CNAME"
     if args.type.upper() == "CNAME":
         type = args.type.upper()
-    ip = args.ip if args.ip != None else fetch_external_ip(type)
+    ip = args.ip if args.ip != None else fetch_ip(type)
     ttl = args.ttl
     value = args.value if args.value != None else ""
 
-    # Parse the records to find if the record already exists
+    #Parse the records to find if the record already exists
     root = etree.fromstring(xml)
     line = "0"
     for child in root.find('data').findall('record'):
         if child.find('name') != None and child.find('name').text == record:
             line = str(child.find('line').text)
+            print("record already exists")
+            sys.exit()
             break
 
     # Update or add the record
@@ -96,6 +98,9 @@ def main(argv):
     new_entry = HostsEntry(entry_type='ipv4', address=ip, names=[site_name])
     my_hosts.add([new_entry])
     my_hosts.write()
+
+    #start the user erpnext instance
+    out = subprocess.Popen(['bench', 'start'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 if __name__ == "__main__":
     if len(sys.argv) < 5:
