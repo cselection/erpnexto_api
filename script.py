@@ -12,10 +12,27 @@ import pexpect
 from python_hosts import Hosts, HostsEntry
 
 def fetch_ip(type):
-    url = 'http://' + ("ipv6" if type == "AAAA" else "ipv4") + '.myexternalip.com/raw'
-    ip = urlopen(url).read().decode('utf-8')[:-1]
-    return ip
-
+    
+    #url = 'http://' + ("ipv6" if type == "AAAA" else "ipv4") + '.myexternalip.com/raw'
+    #ip = urlopen(url).read().decode('utf-8')[:-1]
+    #return ip
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('project_id', help='Your Google Cloud project ID.')
+    parser.add_argument('bucket_name', help='Your Google Cloud Storage bucket name.')
+    parser.add_argument('--zone', default='us-central1-f', help='Compute Engine zone to deploy to.')
+    parser.add_argument('--name', default='demo-instance', help='New instance name.')
+    args = parser.parse_args()
+    project = args.project_id
+    bucket = args.bucket_name
+    zone = args.zone
+    instance_name = args.name
+    compute = googleapiclient.discovery.build('compute', 'v1')
+    operation = create_instance(compute, project, zone, instance_name, bucket)
+    wait_for_operation(compute, project, zone, operation['name'])
+    instances = list_instances(compute, project, zone)
+    for instance in instances:
+        print(' - ' + instance['name'])
+        
 def main(argv):
     #get user data from client registration form
     site_name = argv[0]
