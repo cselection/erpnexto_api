@@ -1,6 +1,5 @@
 import os
 import sys
-import getopt
 import dns.resolver
 from subprocess import call
 import time
@@ -10,29 +9,41 @@ from urllib.request import urlopen,Request
 import xml.etree.ElementTree as etree
 import pexpect
 from python_hosts import Hosts, HostsEntry
+import argparse
+import logging
+import logging.handlers
 
-def fetch_ip(type):
-    
-    #url = 'http://' + ("ipv6" if type == "AAAA" else "ipv4") + '.myexternalip.com/raw'
-    #ip = urlopen(url).read().decode('utf-8')[:-1]
-    #return ip
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('project_id', help='Your Google Cloud project ID.')
-    parser.add_argument('bucket_name', help='Your Google Cloud Storage bucket name.')
-    parser.add_argument('--zone', default='us-central1-f', help='Compute Engine zone to deploy to.')
-    parser.add_argument('--name', default='demo-instance', help='New instance name.')
-    args = parser.parse_args()
-    project = args.project_id
-    bucket = args.bucket_name
-    zone = args.zone
-    instance_name = args.name
+def list_instances(compute, project, zone):
+    result = compute.instances().list(project=project, zone=zone).execute()
+    return result['items'] if 'items' in result else None
+
+def fetch_ip():
+    #prepare google cloud compute engine data 
+    project = "project_id"
+    bucket = "bucket_name"
+    zone = "zone"
+    instance_name = "instance_name"
+    #build and initialize the API
     compute = googleapiclient.discovery.build('compute', 'v1')
     operation = create_instance(compute, project, zone, instance_name, bucket)
     wait_for_operation(compute, project, zone, operation['name'])
+    #get compute engine vm instances
     instances = list_instances(compute, project, zone)
-    for instance in instances:
-        print(' - ' + instance['name'])
-        
+    if instances != None:
+        for instance in instances:
+            logging.info(' - ' + instance['name'])
+    else
+        logging.info('no vm instances returned')
+    #make a http request to get vm instance info, then get it's ip
+    try:
+        request = Request('https://compute.googleapis.com/compute/v1/projects/'+project+'/zones/'+zone+'/instances/'+instance-name)
+        responseData = urlopen(request).read()
+        logging.info(responseData)
+    except Exception as e:
+        logging.exception(str(e))
+    ip = responseData.networkInterfaces.accessConfigs.natIP
+    return ip
+
 def main(argv):
     #get user data from client registration form
     site_name = argv[0]
@@ -40,59 +51,51 @@ def main(argv):
     phone = argv[2]
     password = argv[3]
 
+    #get all arguments needed to create a new A dns record
+    ip = fetch_ip()
+    ttl = CONFIG['record_ttl']
+    record_type = CONFIG['record_type']
+    record_name = site_name
+    if not record_name.endswith('.'):
+        record_name += "."
+    domain = record_name + CONFIG['subdomain']
+
     #prepare some authentication data
-    mysql_password = "Qwe-123"
-    admin_password = "Qwe-123"
+    mysql_password = CONFIG['mysql_password']
+    admin_password = CONFIG['admin_password']
 
-    # Generate a auth_string to connect to cPanel
-    auth_string = 'Basic ' + base64.b64encode((CONFIG['username']+':'+CONFIG['password']).encode()).decode("utf-8")
-
-    # Show all arguments
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--ttl', default='300', help='Time To Live')
-    parser.add_argument('--type', default='CNAME', help='Type of record: A for IPV4 or AAAA for IPV6 or CNAME to alias existing record')
-    parser.add_argument('--ip', help='The IPV4/IPV6 address (if known)')
-    parser.add_argument('--value', help='The value of the CNAME (if known)')
-    parser.add_argument('--name', help='Your record name, ie: ipv6.domain.com', required=True)
-    parser.add_argument('--domain', help='The domain name containing the record name ie:[cselection].com', required=True)
-    args = parser.parse_args()
+    #Generate a auth_string to connect to cPanel
+    auth_string = 'Basic ' + base64.b64encode((CONFIG['cpanel_username']+':'+CONFIG['cpanel_password']).encode()).decode("utf-8")
 
     # Fetch existing DNS records
-    q = Request(CONFIG['url'] + '/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=fetchzone&cpanel_xmlapi_apiversion=2&domain=' + domain)
-    q.add_header('Authorization', auth_string)
-    xml = urlopen(q).read().decode("utf-8")
-
-    domain = args.domain    
-    record = args.name
-    if not record.endswith('.'):
-        record += "."
-    type = "CNAME"
-    if args.type.upper() == "CNAME":
-        type = args.type.upper()
-    ip = args.ip if args.ip != None else fetch_ip(type)
-    ttl = args.ttl
-    value = args.value if args.value != None else ""
+    try:
+        request = Request(CONFIG['url'] + '/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=fetchzone&cpanel_xmlapi_apiversion=2&domain=' + domain)
+        request.add_header('Authorization', auth_string)
+        logging.info("fetching records succedded with status code : " + str(request.getCode()))
+        response_xml = urlopen(request).read().decode("utf-8")
+    except Exception as e:
+       logging.exception("fetching records apported with status code : " + str(e.getCode()))
 
     #Parse the records to find if the record already exists
-    root = etree.fromstring(xml)
-    line = "0"
+    root = etree.fromstring(response_xml)
     for child in root.find('data').findall('record'):
-        if child.find('name') != None and child.find('name').text == record:
-            line = str(child.find('line').text)
-            print("record already exists")
+        if child.find('name') != None and child.find('name').text == record_name:
+            logging.info("record already exist with the same name")
             sys.exit()
             break
 
-    # Update or add the record
-    query = "&address=" + ip
-    if type == "TXT":
-        query = "&" + urlencode( {'txtdata': value} )
-
-    url = CONFIG['url'] + "/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=" + ("add" if line == "0" else "edit") + "_zone_record&cpanel_xmlapi_apiversion=2&domain="+ domain + "&name=" + record + "&type=" + type + "&ttl=" + ttl + query
-    if line != "0":
-        url += "&Line=" + line
-
-    print(url)
+    #add the new record
+    url = CONFIG['url'] + "/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=add_zone_record&cpanel_xmlapi_apiversion=2&domain="+ domain + "&name=" + record_name + "&type=" + record_type + "&ttl=" + ttl + "&address=" + ip
+    logging.info("create new record url " + url)
+    try:
+        create_record_request = Request(url)
+        create_record_request.add_header('Authorization', auth_string)
+        returned_response = urlopen(create_record_request).read()
+        returned_response_decored = returned_response.decode("utf-8")
+        logging.info(returned_response_decored)
+    except Exception as e:
+        logging.exception("creating new record apported with status code :" + str(e.getCode()))
+        sys.exit()
 
     #write bench shell commands to install the new erpnext site
     child = pexpect.spawn("bench config dns-mulitenant on")
@@ -127,6 +130,14 @@ if __name__ == "__main__":
     try:
         from config import CONFIG
     except ImportError:
-        print("Error: config.py NOT found")
-        exit()
+        logging.exception("Error: config.py NOT found")
+        sys.exit()
+    #prepare logging handlers
+    handler = logging.handlers.WatchedFileHandler(os.environ.get("LOGFILE", "./script_log.log"))
+    formatter = logging.Formatter(logging.BASIC_FORMAT)
+    handler.setFormatter(formatter)
+    root = logging.getLogger()
+    root.setLevel(os.environ.get("LOGLEVEL", "INFO"))
+    root.addHandler(handler)
+    #call the main function
     main(sys.argv[1:])
