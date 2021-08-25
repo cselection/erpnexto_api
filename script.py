@@ -52,7 +52,7 @@ def main(argv):
     password = argv[3]
 
     #get all arguments needed to create a new A dns record
-    ip = fetch_ip()
+    ip = CONFIG['ip']
     ttl = CONFIG['record_ttl']
     record_type = CONFIG['record_type']
     record_name = site_name
