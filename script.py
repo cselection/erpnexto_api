@@ -50,6 +50,7 @@ def main(argv):
     business_mail = argv[1]
     phone = argv[2]
     password = argv[3]
+    plan = argv[4]
 
     #get all arguments needed to create a new A dns record
     ip = CONFIG['ip']
@@ -71,7 +72,7 @@ def main(argv):
     try:
         request = Request(CONFIG['url'] + '/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=fetchzone&cpanel_xmlapi_apiversion=2&domain=' + domain)
         request.add_header('Authorization', auth_string)
-        logging.info("fetching records succedded with status code : " + str(request.getCode()))
+        logging.info("fetching records succeeded with status code : " + str(request.getCode()))
         response_xml = urlopen(request).read().decode("utf-8")
     except Exception as e:
        logging.exception("fetching records apported with status code : " + str(e.getCode()))
@@ -113,6 +114,11 @@ def main(argv):
     out = subprocess.Popen(['sudo', 'service','nginx', 'reload'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     out = subprocess.Popen(['bench', '--site', site_name, 'install-app', 'erpnext'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
+    if plan === 'free':
+        out = subprocess.Popen(['bench', '--site', site_name, 'set-limits', '--limit', 'users', 3, '--limit', 'space', 0.157], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    else if plan === 'standard':
+        out = subprocess.Popen(['bench', '--site', site_name, 'set-limit', 'users', 8], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
     #open /etc/hosts and add the new sub-domain as a new entry
     my_hosts = Hosts()
     new_entry = HostsEntry(entry_type='ipv4', address=ip, names=[site_name])
@@ -123,7 +129,7 @@ def main(argv):
     out = subprocess.Popen(['bench', 'start'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 if __name__ == "__main__":
-    if len(sys.argv) < 5:
+    if len(sys.argv) < 6:
         print("Not enough arguments!")
     else
         sys.exit()

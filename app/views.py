@@ -18,6 +18,7 @@ def signup():
     business_mail = None
     phone = None
     password = None
+    plan = None
     if request_data:
         if 'site_name' in request_data:
             site_name = request_data['site_name']
@@ -27,8 +28,10 @@ def signup():
             phone = request_data['phone']
         if 'password' in request_data:
             password = request_data['password']
+        if 'plan' in request_data['plan']:
+            plan = request_data['plan']
         os.system('python script.py')
-        return jsonify(message="you have registered successfully")
+        return jsonify(message="you have successfully registered in our system")
 
 
 
