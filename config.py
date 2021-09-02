@@ -5,7 +5,7 @@ CONFIG = {
     'mysql_password' : 'Qwe-123',
     'admin_password' : 'Qwe-123',
     'record_type' : 'A',
-    'record_ttl' : '14400'
+    'record_ttl' : '14400',
     'subdomain' : 'cselection.net',
     'ip' : '192.345.23.17'
 }

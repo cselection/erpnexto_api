@@ -13,6 +13,7 @@ import argparse
 import logging
 import logging.handlers
 
+'''
 def list_instances(compute, project, zone):
     result = compute.instances().list(project=project, zone=zone).execute()
     return result['items'] if 'items' in result else None
@@ -42,9 +43,10 @@ def fetch_ip():
     except Exception as e:
         logging.exception(str(e))
     ip = responseData.networkInterfaces.accessConfigs.natIP
-    return ip
+    return ip '''
 
 def main(argv):
+    print('INSIDE SCRIPT ============================================================')
     #get user data from client registration form
     site_name = argv[0]
     business_mail = argv[1]
@@ -52,12 +54,19 @@ def main(argv):
     password = argv[3]
     plan = argv[4]
 
+    print('site is %s' % site_name)
+    print('main name is %s' % business_mail)
+    print('phone is %s' % phone)
+    print('password is %s' % password)
+    print('plan is %s' % plan)
+
     #get all arguments needed to create a new A dns record
     ip = CONFIG['ip']
     ttl = CONFIG['record_ttl']
     record_type = CONFIG['record_type']
     record_name = site_name
     if not record_name.endswith('.'):
+        print('REQORD NAME DOESN\'T END WITH EXCEPTION =========================================== ')
         record_name += "."
     domain = record_name + CONFIG['subdomain']
 
@@ -68,18 +77,22 @@ def main(argv):
     #Generate a auth_string to connect to cPanel
     auth_string = 'Basic ' + base64.b64encode((CONFIG['cpanel_username']+':'+CONFIG['cpanel_password']).encode()).decode("utf-8")
 
+    print('BEFORE REQUEST =========================================== ')
     # Fetch existing DNS records
     try:
-        request = Request(CONFIG['url'] + '/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=fetchzone&cpanel_xmlapi_apiversion=2&domain=' + domain)
+        response = Request(CONFIG['url'] + '/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=fetchzone&cpanel_xmlapi_apiversion=2&domain=' + domain)
         request.add_header('Authorization', auth_string)
-        logging.info("fetching records succeeded with status code : " + str(request.getCode()))
-        response_xml = urlopen(request).read().decode("utf-8")
+        logging.info("fetching records succeeded with status code : " + str(response))
+        response_xml = urlopen(response).read().decode("utf-8")
     except Exception as e:
-       logging.exception("fetching records apported with status code : " + str(e.getCode()))
+       print('REQUEST EXCEPTION =========================================== '+ str(response))
+       logging.exception("fetching records apported with status code : " + str(response))
 
     #Parse the records to find if the record already exists
     root = etree.fromstring(response_xml)
     for child in root.find('data').findall('record'):
+        print('INSIDE CHILD FOR LOOP ===========================================')
+        print('CLIENT NAME =========================================== %s' % child.find('name').text)
         if child.find('name') != None and child.find('name').text == record_name:
             logging.info("record already exist with the same name")
             sys.exit()
@@ -92,10 +105,12 @@ def main(argv):
         create_record_request = Request(url)
         create_record_request.add_header('Authorization', auth_string)
         returned_response = urlopen(create_record_request).read()
-        returned_response_decored = returned_response.decode("utf-8")
-        logging.info(returned_response_decored)
+        print('RESPONSE DATA =========================================== %s' % returned_response)
+        returned_response_decoded = returned_response.decode("utf-8")
+        logging.info(returned_response_decoded)
     except Exception as e:
-        logging.exception("creating new record apported with status code :" + str(e.getCode()))
+        print('RESPONSE EXCEPTION =========================================== ')
+        logging.exception("creating new record apported with status code :" + str(create_record_request.status))
         sys.exit()
 
     #write bench shell commands to install the new erpnext site
@@ -114,9 +129,11 @@ def main(argv):
     out = subprocess.Popen(['sudo', 'service','nginx', 'reload'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     out = subprocess.Popen(['bench', '--site', site_name, 'install-app', 'erpnext'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-    if plan === 'free':
+    if plan == 'free':
+        print('FREE EXCEPTION =========================================== ')
         out = subprocess.Popen(['bench', '--site', site_name, 'set-limits', '--limit', 'users', 3, '--limit', 'space', 0.157], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    else if plan === 'standard':
+    elif plan == 'standard':
+        print('STANDARD EXCEPTION =========================================== ')
         out = subprocess.Popen(['bench', '--site', site_name, 'set-limit', 'users', 8], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
     #open /etc/hosts and add the new sub-domain as a new entry
@@ -129,15 +146,21 @@ def main(argv):
     out = subprocess.Popen(['bench', 'start'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 if __name__ == "__main__":
-    if len(sys.argv) < 6:
+    print('INSIDE SCRIPT ============================================================')
+    if len(sys.argv) != 5:
+        print('ARGUMENTS ARE TOO SHORT ============================================================')
         print("Not enough arguments!")
-    else
+    else:
+        print('MAIN SYSTEM EXIT ============================================================')
         sys.exit()
     try:
+        print('TRYING TO IMPORT CONFIG ============================================================')
         from config import CONFIG
     except ImportError:
+        print('IMPORT EXCEPTION =========================================== ')
         logging.exception("Error: config.py NOT found")
         sys.exit()
+    print('BEFORE LOGGING =========================================== ')
     #prepare logging handlers
     handler = logging.handlers.WatchedFileHandler(os.environ.get("LOGFILE", "./script_log.log"))
     formatter = logging.Formatter(logging.BASIC_FORMAT)
@@ -145,5 +168,6 @@ if __name__ == "__main__":
     root = logging.getLogger()
     root.setLevel(os.environ.get("LOGLEVEL", "INFO"))
     root.addHandler(handler)
+    print('AFTER LOGGING =========================================== ')
     #call the main function
     main(sys.argv[1:])

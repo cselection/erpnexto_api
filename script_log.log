@@ -1,0 +1,5 @@
+ERROR:root:fetching records apported with status code : <urllib.request.Request object at 0x0000018DB5E4C4C0>
+Traceback (most recent call last):
+  File "C:\erpnext-user-registration-backend\erpnext-user-registration-app\script.py", line 84, in main
+    request.add_header('Authorization', auth_string)
+NameError: name 'request' is not defined
