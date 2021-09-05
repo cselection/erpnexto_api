@@ -46,7 +46,6 @@ def fetch_ip():
     return ip '''
 
 def main(argv):
-    print('INSIDE SCRIPT ============================================================')
     #get user data from client registration form
     site_name = argv[0]
     business_mail = argv[1]
@@ -54,19 +53,12 @@ def main(argv):
     password = argv[3]
     plan = argv[4]
 
-    print('site is %s' % site_name)
-    print('main name is %s' % business_mail)
-    print('phone is %s' % phone)
-    print('password is %s' % password)
-    print('plan is %s' % plan)
-
     #get all arguments needed to create a new A dns record
     ip = CONFIG['ip']
     ttl = CONFIG['record_ttl']
     record_type = CONFIG['record_type']
     record_name = site_name
     if not record_name.endswith('.'):
-        print('REQORD NAME DOESN\'T END WITH EXCEPTION =========================================== ')
         record_name += "."
     domain = record_name + CONFIG['subdomain']
 
@@ -77,31 +69,38 @@ def main(argv):
     #Generate a auth_string to connect to cPanel
     auth_string = 'Basic ' + base64.b64encode((CONFIG['cpanel_username']+':'+CONFIG['cpanel_password']).encode()).decode("utf-8")
 
-    print('BEFORE REQUEST =========================================== ')
+    #+ '/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=fetchzone&cpanel_xmlapi_apiversion=2&domain=%s' % domain
     # Fetch existing DNS records
     try:
-        response = Request(CONFIG['url'] + '/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=fetchzone&cpanel_xmlapi_apiversion=2&domain=' + domain)
+        logging.info("fetching records " + CONFIG['url'] + '/cpanel')
+        request = Request(CONFIG['url'] + '/cpanel')
         request.add_header('Authorization', auth_string)
-        logging.info("fetching records succeeded with status code : " + str(response))
-        response_xml = urlopen(response).read().decode("utf-8")
-    except Exception as e:
-       print('REQUEST EXCEPTION =========================================== '+ str(response))
-       logging.exception("fetching records apported with status code : " + str(response))
+        request.add_header('User-Agent', CONFIG['user_agent'])
+        with urlopen(request, timeout=20) as response:
+            response_data = response.read()
+            response_xml = response_data.decode("utf-8")    
+            print("response is %s" % str(response_xml))
 
-    #Parse the records to find if the record already exists
-    root = etree.fromstring(response_xml)
-    for child in root.find('data').findall('record'):
-        print('INSIDE CHILD FOR LOOP ===========================================')
-        print('CLIENT NAME =========================================== %s' % child.find('name').text)
-        if child.find('name') != None and child.find('name').text == record_name:
-            logging.info("record already exist with the same name")
-            sys.exit()
-            break
+            #Parse the records to find if the record already exists
+            root = etree.fromstring(response_xml)
+            for child in root.find('data').findall('record'):
+                print('CLIENT NAME =========================================== %s' % child.find('name').text)
+                if child.find('name') != None and child.find('name').text == record_name:
+                    logging.info("record already exist with the same name \n")
+                    logging.exception("-------------------------------")
+                    sys.exit()
+                    break
+
+    except Exception as e:
+       print('REQUEST EXCEPTION =========================================== '+ str(e))
+       logging.exception("fetching records exception : " + str(e) + "\n")
+       logging.exception("-------------------------------")
+
 
     #add the new record
-    url = CONFIG['url'] + "/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=add_zone_record&cpanel_xmlapi_apiversion=2&domain="+ domain + "&name=" + record_name + "&type=" + record_type + "&ttl=" + ttl + "&address=" + ip
-    logging.info("create new record url " + url)
     try:
+        url = CONFIG['url'] + "/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=add_zone_record&cpanel_xmlapi_apiversion=2&domain="+ domain + "&name=" + record_name + "&type=" + record_type + "&ttl=" + ttl + "&address=" + ip
+        logging.info("create new record url " + url)
         create_record_request = Request(url)
         create_record_request.add_header('Authorization', auth_string)
         returned_response = urlopen(create_record_request).read()
@@ -110,7 +109,7 @@ def main(argv):
         logging.info(returned_response_decoded)
     except Exception as e:
         print('RESPONSE EXCEPTION =========================================== ')
-        logging.exception("creating new record apported with status code :" + str(create_record_request.status))
+        logging.exception("creating new record apported :" + str(e))
         sys.exit()
 
     #write bench shell commands to install the new erpnext site
@@ -146,21 +145,15 @@ def main(argv):
     out = subprocess.Popen(['bench', 'start'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 if __name__ == "__main__":
-    print('INSIDE SCRIPT ============================================================')
     if len(sys.argv) != 5:
-        print('ARGUMENTS ARE TOO SHORT ============================================================')
-        print("Not enough arguments!")
+        print("too fre args")
     else:
-        print('MAIN SYSTEM EXIT ============================================================')
         sys.exit()
     try:
-        print('TRYING TO IMPORT CONFIG ============================================================')
         from config import CONFIG
     except ImportError:
-        print('IMPORT EXCEPTION =========================================== ')
         logging.exception("Error: config.py NOT found")
         sys.exit()
-    print('BEFORE LOGGING =========================================== ')
     #prepare logging handlers
     handler = logging.handlers.WatchedFileHandler(os.environ.get("LOGFILE", "./script_log.log"))
     formatter = logging.Formatter(logging.BASIC_FORMAT)
@@ -168,6 +161,5 @@ if __name__ == "__main__":
     root = logging.getLogger()
     root.setLevel(os.environ.get("LOGLEVEL", "INFO"))
     root.addHandler(handler)
-    print('AFTER LOGGING =========================================== ')
     #call the main function
     main(sys.argv[1:])

@@ -1,5 +1,105 @@
-ERROR:root:fetching records apported with status code : <urllib.request.Request object at 0x0000018DB5E4C4C0>
+ERROR:root:fetching records exception : HTTP Error 404: Not Found
 Traceback (most recent call last):
-  File "C:\erpnext-user-registration-backend\erpnext-user-registration-app\script.py", line 84, in main
-    request.add_header('Authorization', auth_string)
-NameError: name 'request' is not defined
+  File "C:\erpnext-user-registration-backend\erpnext-user-registration-app\script.py", line 78, in main
+    with urlopen(request, timeout=20) as response:
+  File "C:\Python39\lib\urllib\request.py", line 214, in urlopen
+    return opener.open(url, data, timeout)
+  File "C:\Python39\lib\urllib\request.py", line 523, in open
+    response = meth(req, response)
+  File "C:\Python39\lib\urllib\request.py", line 632, in http_response
+    response = self.parent.error(
+  File "C:\Python39\lib\urllib\request.py", line 561, in error
+    return self._call_chain(*args)
+  File "C:\Python39\lib\urllib\request.py", line 494, in _call_chain
+    result = func(*args)
+  File "C:\Python39\lib\urllib\request.py", line 641, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 404: Not Found
+ERROR:root:-------------------------------
+Traceback (most recent call last):
+  File "C:\erpnext-user-registration-backend\erpnext-user-registration-app\script.py", line 78, in main
+    with urlopen(request, timeout=20) as response:
+  File "C:\Python39\lib\urllib\request.py", line 214, in urlopen
+    return opener.open(url, data, timeout)
+  File "C:\Python39\lib\urllib\request.py", line 523, in open
+    response = meth(req, response)
+  File "C:\Python39\lib\urllib\request.py", line 632, in http_response
+    response = self.parent.error(
+  File "C:\Python39\lib\urllib\request.py", line 561, in error
+    return self._call_chain(*args)
+  File "C:\Python39\lib\urllib\request.py", line 494, in _call_chain
+    result = func(*args)
+  File "C:\Python39\lib\urllib\request.py", line 641, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 404: Not Found
+INFO:root:create new record url https://depro6.fcomet.com:2083/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=add_zone_record&cpanel_xmlapi_apiversion=2&domain=asdasd@asd.cselection.net&name=asdasd@asd.&type=A&ttl=14400&address=192.345.23.17
+ERROR:root:creating new record apported :HTTP Error 404: Not Found
+Traceback (most recent call last):
+  File "C:\erpnext-user-registration-backend\erpnext-user-registration-app\script.py", line 105, in main
+    returned_response = urlopen(create_record_request).read()
+  File "C:\Python39\lib\urllib\request.py", line 214, in urlopen
+    return opener.open(url, data, timeout)
+  File "C:\Python39\lib\urllib\request.py", line 523, in open
+    response = meth(req, response)
+  File "C:\Python39\lib\urllib\request.py", line 632, in http_response
+    response = self.parent.error(
+  File "C:\Python39\lib\urllib\request.py", line 561, in error
+    return self._call_chain(*args)
+  File "C:\Python39\lib\urllib\request.py", line 494, in _call_chain
+    result = func(*args)
+  File "C:\Python39\lib\urllib\request.py", line 641, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 404: Not Found
+INFO:root:fetching records https://depro6.fcomet.com:2083/cpanel
+ERROR:root:fetching records exception : HTTP Error 404: Not Found
+Traceback (most recent call last):
+  File "C:\erpnext-user-registration-backend\erpnext-user-registration-app\script.py", line 79, in main
+    with urlopen(request, timeout=20) as response:
+  File "C:\Python39\lib\urllib\request.py", line 214, in urlopen
+    return opener.open(url, data, timeout)
+  File "C:\Python39\lib\urllib\request.py", line 523, in open
+    response = meth(req, response)
+  File "C:\Python39\lib\urllib\request.py", line 632, in http_response
+    response = self.parent.error(
+  File "C:\Python39\lib\urllib\request.py", line 561, in error
+    return self._call_chain(*args)
+  File "C:\Python39\lib\urllib\request.py", line 494, in _call_chain
+    result = func(*args)
+  File "C:\Python39\lib\urllib\request.py", line 641, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 404: Not Found
+ERROR:root:-------------------------------
+Traceback (most recent call last):
+  File "C:\erpnext-user-registration-backend\erpnext-user-registration-app\script.py", line 79, in main
+    with urlopen(request, timeout=20) as response:
+  File "C:\Python39\lib\urllib\request.py", line 214, in urlopen
+    return opener.open(url, data, timeout)
+  File "C:\Python39\lib\urllib\request.py", line 523, in open
+    response = meth(req, response)
+  File "C:\Python39\lib\urllib\request.py", line 632, in http_response
+    response = self.parent.error(
+  File "C:\Python39\lib\urllib\request.py", line 561, in error
+    return self._call_chain(*args)
+  File "C:\Python39\lib\urllib\request.py", line 494, in _call_chain
+    result = func(*args)
+  File "C:\Python39\lib\urllib\request.py", line 641, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 404: Not Found
+INFO:root:create new record url https://depro6.fcomet.com:2083/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=add_zone_record&cpanel_xmlapi_apiversion=2&domain=asda@asd.cselection.net&name=asda@asd.&type=A&ttl=14400&address=192.345.23.17
+ERROR:root:creating new record apported :HTTP Error 404: Not Found
+Traceback (most recent call last):
+  File "C:\erpnext-user-registration-backend\erpnext-user-registration-app\script.py", line 106, in main
+    returned_response = urlopen(create_record_request).read()
+  File "C:\Python39\lib\urllib\request.py", line 214, in urlopen
+    return opener.open(url, data, timeout)
+  File "C:\Python39\lib\urllib\request.py", line 523, in open
+    response = meth(req, response)
+  File "C:\Python39\lib\urllib\request.py", line 632, in http_response
+    response = self.parent.error(
+  File "C:\Python39\lib\urllib\request.py", line 561, in error
+    return self._call_chain(*args)
+  File "C:\Python39\lib\urllib\request.py", line 494, in _call_chain
+    result = func(*args)
+  File "C:\Python39\lib\urllib\request.py", line 641, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 404: Not Found
