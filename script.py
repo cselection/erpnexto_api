@@ -66,30 +66,20 @@ def main(argv):
     mysql_password = CONFIG['mysql_password']
     admin_password = CONFIG['admin_password']
 
-    #Generate a auth_string to connect to cPanel
-    auth_string = 'Basic ' + base64.b64encode((CONFIG['cpanel_username']+':'+CONFIG['cpanel_password']).encode()).decode("utf-8")
+    """#Generate a auth_string to connect to cPanel
+    auth_string = 'Basic ' + base64.b64encode((CONFIG['cpanel_username']+':'+CONFIG['cpanel_password']).encode()).decode("utf-8") """
 
-    #+ '/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=fetchzone&cpanel_xmlapi_apiversion=2&domain=%s' % domain
+    # CONFIG[URL] = https://depro6.fcomet.com:2083
     # Fetch existing DNS records
     try:
-        logging.info("fetching records " + CONFIG['url'] + '/cpanel')
-        request = Request(CONFIG['url'] + '/cpanel')
-        request.add_header('Authorization', auth_string)
+        request = Request('https://api.cloudflare.com/client/v4/zones?name='+domain+'&status=active&account.id=3ba83a056f95020fe1205d5b7d3bc3d2&account.name=Erpnextosas@gmail.com&page=1&per_page=50&order=status&direction=desc&match=all')
+        request.add_header('Authorization', 'Bearer '+CONFIG[cloudflare_token])
+        request.add_header('Content-Type', 'application/json')
         request.add_header('User-Agent', CONFIG['user_agent'])
         with urlopen(request, timeout=20) as response:
             response_data = response.read()
-            response_xml = response_data.decode("utf-8")    
-            print("response is %s" % str(response_xml))
+            print("response is %s" % str(response_data))
 
-            #Parse the records to find if the record already exists
-            root = etree.fromstring(response_xml)
-            for child in root.find('data').findall('record'):
-                print('CLIENT NAME =========================================== %s' % child.find('name').text)
-                if child.find('name') != None and child.find('name').text == record_name:
-                    logging.info("record already exist with the same name \n")
-                    logging.exception("-------------------------------")
-                    sys.exit()
-                    break
 
     except Exception as e:
        print('REQUEST EXCEPTION =========================================== '+ str(e))
