@@ -10,7 +10,7 @@ cors = CORS(app, resource={
 })
 app.config['CORS_HEADERS'] = 'Content-Type'
 
-## COMMAND TO RUN THE APP : python -m flask run
+## COMMAND TO RUN THE APP : python -m flask run / flask run
 @app.route("/signup", methods=['POST']) 
 @cross_origin()
 def signup():
@@ -31,7 +31,6 @@ def signup():
             password = request_data['password']
         if 'plan' in request_data['plan']:
             plan = request_data['plan']
-        #print('plan is '+plan)
         os.system('python script.py '+site_name+" "+business_mail+" "+phone+" "+password+" "+plan)
         return jsonify(message="you have successfully registered in our system")
 

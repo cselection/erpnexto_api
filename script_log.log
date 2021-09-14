@@ -1,45 +1,153 @@
-ERROR:root:fetching records exception : 'url'
+ERROR:root:fetching records exception : HTTP Error 403: Forbidden
 Traceback (most recent call last):
-  File "C:\erpnext-user-registration-backend\erpnext-user-registration-app\script.py", line 75, in main
-    logging.info("fetching records " + CONFIG['url'] + '/cpanel')
-KeyError: 'url'
+  File "script.py", line 74, in main
+    with urlopen(request, timeout=20) as response:
+  File "/usr/lib/python3.8/urllib/request.py", line 222, in urlopen
+    return opener.open(url, data, timeout)
+  File "/usr/lib/python3.8/urllib/request.py", line 531, in open
+    response = meth(req, response)
+  File "/usr/lib/python3.8/urllib/request.py", line 640, in http_response
+    response = self.parent.error(
+  File "/usr/lib/python3.8/urllib/request.py", line 569, in error
+    return self._call_chain(*args)
+  File "/usr/lib/python3.8/urllib/request.py", line 502, in _call_chain
+    result = func(*args)
+  File "/usr/lib/python3.8/urllib/request.py", line 649, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 403: Forbidden
 ERROR:root:-------------------------------
 Traceback (most recent call last):
-  File "C:\erpnext-user-registration-backend\erpnext-user-registration-app\script.py", line 75, in main
-    logging.info("fetching records " + CONFIG['url'] + '/cpanel')
-KeyError: 'url'
+  File "script.py", line 74, in main
+    with urlopen(request, timeout=20) as response:
+  File "/usr/lib/python3.8/urllib/request.py", line 222, in urlopen
+    return opener.open(url, data, timeout)
+  File "/usr/lib/python3.8/urllib/request.py", line 531, in open
+    response = meth(req, response)
+  File "/usr/lib/python3.8/urllib/request.py", line 640, in http_response
+    response = self.parent.error(
+  File "/usr/lib/python3.8/urllib/request.py", line 569, in error
+    return self._call_chain(*args)
+  File "/usr/lib/python3.8/urllib/request.py", line 502, in _call_chain
+    result = func(*args)
+  File "/usr/lib/python3.8/urllib/request.py", line 649, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 403: Forbidden
 ERROR:root:creating new record apported :'url'
 Traceback (most recent call last):
-  File "C:\erpnext-user-registration-backend\erpnext-user-registration-app\script.py", line 93, in main
+  File "script.py", line 87, in main
     url = CONFIG['url'] + "/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=add_zone_record&cpanel_xmlapi_apiversion=2&domain="+ domain + "&name=" + record_name + "&type=" + record_type + "&ttl=" + ttl + "&address=" + ip
 KeyError: 'url'
-ERROR:root:fetching records exception : name 'Requests' is not defined
+ERROR:root:fetching records exception : 'bytes' object has no attribute 'result'
 Traceback (most recent call last):
-  File "C:\erpnext-user-registration-backend\erpnext-user-registration-app\script.py", line 75, in main
-    request = Requests('https://api.cloudflare.com/client/v4/zones?name='+domain+'&status=active&account.id=3ba83a056f95020fe1205d5b7d3bc3d2&account.name=Erpnextosas@gmail.com&page=1&per_page=50&order=status&direction=desc&match=all')
-NameError: name 'Requests' is not defined
+  File "script.py", line 80, in main
+    if len(response_data.result) > 0:
+AttributeError: 'bytes' object has no attribute 'result'
 ERROR:root:-------------------------------
 Traceback (most recent call last):
-  File "C:\erpnext-user-registration-backend\erpnext-user-registration-app\script.py", line 75, in main
-    request = Requests('https://api.cloudflare.com/client/v4/zones?name='+domain+'&status=active&account.id=3ba83a056f95020fe1205d5b7d3bc3d2&account.name=Erpnextosas@gmail.com&page=1&per_page=50&order=status&direction=desc&match=all')
-NameError: name 'Requests' is not defined
+  File "script.py", line 80, in main
+    if len(response_data.result) > 0:
+AttributeError: 'bytes' object has no attribute 'result'
+ERROR:root:fetching records exception : 'bytes' object has no attribute 'read'
+Traceback (most recent call last):
+  File "script.py", line 80, in main
+    date = json.load(response_data)
+  File "/usr/lib/python3.8/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+AttributeError: 'bytes' object has no attribute 'read'
+ERROR:root:-------------------------------
+Traceback (most recent call last):
+  File "script.py", line 80, in main
+    date = json.load(response_data)
+  File "/usr/lib/python3.8/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+AttributeError: 'bytes' object has no attribute 'read'
+ERROR:root:fetching records exception : 'str' object has no attribute 'read'
+Traceback (most recent call last):
+  File "script.py", line 80, in main
+    data = json.load(response.read().decode(response.info().get_param('charset') or 'utf-8'))
+  File "/usr/lib/python3.8/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+AttributeError: 'str' object has no attribute 'read'
+ERROR:root:-------------------------------
+Traceback (most recent call last):
+  File "script.py", line 80, in main
+    data = json.load(response.read().decode(response.info().get_param('charset') or 'utf-8'))
+  File "/usr/lib/python3.8/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+AttributeError: 'str' object has no attribute 'read'
+ERROR:root:fetching records exception : 'str' object has no attribute 'read'
+Traceback (most recent call last):
+  File "script.py", line 80, in main
+    data = json.load(response.read().decode(response.info().get_param('charset') or 'utf-8'))
+  File "/usr/lib/python3.8/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+AttributeError: 'str' object has no attribute 'read'
+ERROR:root:-------------------------------
+Traceback (most recent call last):
+  File "script.py", line 80, in main
+    data = json.load(response.read().decode(response.info().get_param('charset') or 'utf-8'))
+  File "/usr/lib/python3.8/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+AttributeError: 'str' object has no attribute 'read'
+ERROR:root:fetching records exception : 'bytes' object has no attribute 'info'
+Traceback (most recent call last):
+  File "script.py", line 81, in main
+    data = json.load(response_data.decode(response_data.info().get_param('charset') or 'utf-8'))
+AttributeError: 'bytes' object has no attribute 'info'
+ERROR:root:-------------------------------
+Traceback (most recent call last):
+  File "script.py", line 81, in main
+    data = json.load(response_data.decode(response_data.info().get_param('charset') or 'utf-8'))
+AttributeError: 'bytes' object has no attribute 'info'
+ERROR:root:fetching records exception : 'str' object has no attribute 'read'
+Traceback (most recent call last):
+  File "script.py", line 81, in main
+    data = json.load(response_data.decode(response.info().get_param('charset') or 'utf-8'))
+  File "/usr/lib/python3.8/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+AttributeError: 'str' object has no attribute 'read'
+ERROR:root:-------------------------------
+Traceback (most recent call last):
+  File "script.py", line 81, in main
+    data = json.load(response_data.decode(response.info().get_param('charset') or 'utf-8'))
+  File "/usr/lib/python3.8/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+AttributeError: 'str' object has no attribute 'read'
+ERROR:root:fetching records exception : 'str' object has no attribute 'read'
+Traceback (most recent call last):
+  File "script.py", line 81, in main
+    data = json.load(response_data)
+  File "/usr/lib/python3.8/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+AttributeError: 'str' object has no attribute 'read'
+ERROR:root:-------------------------------
+Traceback (most recent call last):
+  File "script.py", line 81, in main
+    data = json.load(response_data)
+  File "/usr/lib/python3.8/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+AttributeError: 'str' object has no attribute 'read'
+ERROR:root:fetching records exception : 'bytes' object has no attribute 'read'
+Traceback (most recent call last):
+  File "script.py", line 81, in main
+    data = json.load(response.read())
+  File "/usr/lib/python3.8/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+AttributeError: 'bytes' object has no attribute 'read'
+ERROR:root:-------------------------------
+Traceback (most recent call last):
+  File "script.py", line 81, in main
+    data = json.load(response.read())
+  File "/usr/lib/python3.8/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+AttributeError: 'bytes' object has no attribute 'read'
 ERROR:root:creating new record apported :'url'
 Traceback (most recent call last):
-  File "C:\erpnext-user-registration-backend\erpnext-user-registration-app\script.py", line 92, in main
+  File "script.py", line 103, in main
     url = CONFIG['url'] + "/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=add_zone_record&cpanel_xmlapi_apiversion=2&domain="+ domain + "&name=" + record_name + "&type=" + record_type + "&ttl=" + ttl + "&address=" + ip
 KeyError: 'url'
-ERROR:root:fetching records exception : name 'cloudflare_token' is not defined
-Traceback (most recent call last):
-  File "C:\erpnext-user-registration-backend\erpnext-user-registration-app\script.py", line 76, in main
-    request.add_header('Authorization', 'Bearer '+CONFIG[cloudflare_token])
-NameError: name 'cloudflare_token' is not defined
-ERROR:root:-------------------------------
-Traceback (most recent call last):
-  File "C:\erpnext-user-registration-backend\erpnext-user-registration-app\script.py", line 76, in main
-    request.add_header('Authorization', 'Bearer '+CONFIG[cloudflare_token])
-NameError: name 'cloudflare_token' is not defined
 ERROR:root:creating new record apported :'url'
 Traceback (most recent call last):
-  File "C:\erpnext-user-registration-backend\erpnext-user-registration-app\script.py", line 92, in main
+  File "script.py", line 103, in main
     url = CONFIG['url'] + "/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=add_zone_record&cpanel_xmlapi_apiversion=2&domain="+ domain + "&name=" + record_name + "&type=" + record_type + "&ttl=" + ttl + "&address=" + ip
 KeyError: 'url'

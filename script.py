@@ -1,6 +1,5 @@
 import os
 import sys
-import dns.resolver
 from subprocess import call
 import time
 import base64
@@ -9,9 +8,9 @@ from urllib.request import urlopen,Request
 import xml.etree.ElementTree as etree
 import pexpect
 from python_hosts import Hosts, HostsEntry
-import argparse
 import logging
 import logging.handlers
+import json
 
 '''
 def list_instances(compute, project, zone):
@@ -66,25 +65,36 @@ def main(argv):
     mysql_password = CONFIG['mysql_password']
     admin_password = CONFIG['admin_password']
 
-    """#Generate a auth_string to connect to cPanel
-    auth_string = 'Basic ' + base64.b64encode((CONFIG['cpanel_username']+':'+CONFIG['cpanel_password']).encode()).decode("utf-8") """
+    #prepare some helper data
+    is_domain_available=0
 
-    # CONFIG[URL] = https://depro6.fcomet.com:2083
     # Fetch existing DNS records
     try:
-        request = Request('https://api.cloudflare.com/client/v4/zones?name='+domain+'&status=active&account.id=3ba83a056f95020fe1205d5b7d3bc3d2&account.name=Erpnextosas@gmail.com&page=1&per_page=50&order=status&direction=desc&match=all')
-        request.add_header('Authorization', 'Bearer '+CONFIG[cloudflare_token])
+        request = Request('https://api.cloudflare.com/client/v4/zones?name='+domain+'&status=active&account.id='+CONFIG['cloudflare_account_id']+'&account.name='+CONFIG['cloudflare_account_name']+'&page=1&per_page=50&order=status&direction=desc&match=all')
+        request.add_header('Authorization', 'Bearer %s' % CONFIG['cloudflare_token'])
         request.add_header('Content-Type', 'application/json')
         request.add_header('User-Agent', CONFIG['user_agent'])
         with urlopen(request, timeout=20) as response:
-            response_data = response.read()
-            print("response is %s" % str(response_data))
-
-
+            #if request was successfull
+            if response.getcode() == 200:
+                response_data = response.read().decode(response.info().get_param('charset') or 'utf-8')
+                data = json.loads(response_data)
+                if len(data['result']) > 0:
+                    print("the requested domain is already taken")
+                else:
+                    is_domain_available=1
+                    print("the requested domain is available")
+            #if request is unauthorized
+            elif response.getcode() == 403:
+                print("sorry, you're not authorized to make the request")
+            #if something went wrong
+            else:
+                print("sorry, we couldn't make the request")
     except Exception as e:
        print('REQUEST EXCEPTION =========================================== '+ str(e))
        logging.exception("fetching records exception : " + str(e) + "\n")
        logging.exception("-------------------------------")
+       sys.exit()
 
 
     #add the new record
