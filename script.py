@@ -59,7 +59,6 @@ def verify_cloudflare_token():
                 data = json.loads(response_data)
                 token_status = data['result']['status']
                 token_expiration_date = data['result']['expires_on']
-                print("token exp data **************" + token_expiration_date)
                 # if token is active and current date is before expiration date, rturn 1
                 if token_status == 'active' and datetime.now().strftime("%d/%m/%Y %H:%M:%S") > token_expiration_date:
                     return 1
@@ -88,24 +87,23 @@ def create_new_cloudflare_token():
                                     "policies":
                                         [
                                             {
-                                                "id":"f267e341f3dd4697bd3b9f71dd96247f",
+                                                "id":"3ba83a056f95020fe1205d5b7d3bc3d2",
                                                 "effect":"allow",
                                                 "resources":
                                                     {
-                                                        "com.cloudflare.api.account.zone.eb78d65290b24279ba6f44721b3ea3c4":"*",
-                                                        "com.cloudflare.api.account.zone.22b1de5f1c0e4b3ea97bb1e963b06a43":"*"
+                                                        "com.cloudflare.api.account.zone.2a8aca5cba7eb3c5796b491c564c8dc8":"*"
                                                     },
-                                                    "permission_groups":
-                                                        [
-                                                            {
-                                                                "id":"c8fed203ed3043cba015a93ad1616f1f",
-                                                                "name":"Zone Read"
-                                                            },
-                                                            {
-                                                                "id":"82e64a83756745bbbb1c9c2701bf816b",
-                                                                "name":"DNS Read"
-                                                            }
-                                                        ]
+                                                "permission_groups":
+                                                    [
+                                                        {
+                                                            "id":"c8fed203ed3043cba015a93ad1616f1f",
+                                                            "name":"Zone Read"
+                                                        },
+                                                        {
+                                                            "id":"82e64a83756745bbbb1c9c2701bf816b",
+                                                            "name":"DNS Read"
+                                                        }
+                                                    ]
                                             }
                                         ],
                                     "condition":
@@ -114,28 +112,19 @@ def create_new_cloudflare_token():
                                                 {
                                                     "in":
                                                         [
-                                                            "199.27.128.0/21",
-                                                            "2400:cb00::/32"
-                                                        ],
-                                                    "not_in":
-                                                        [
-                                                            "199.27.128.0/21",
-                                                            "2400:cb00::/32"
+                                                            "197.57.133.44",
+                                                            "54.86.50.139"
                                                         ]
                                                 }
                                         }
                                 }
-        print("1")
         request = Request('https://api.cloudflare.com/client/v4/user/tokens', method='POST', data=urlencode(create_new_token_data).encode('ascii'))
         request.add_header('Authorization', 'Bearer %s' % CONFIG['cloudflare_token'])
         request.add_header('Content-Type', 'application/json')
         request.add_header('User-Agent', CONFIG['user_agent'])
-        print("2")
         with urlopen(request, timeout=20) as response:
-            print("4")
             #if request was successfull
             if response.getcode() == 200:
-                print("3")
                 response_data = response.read().decode(response.info().get_param('charset') or 'utf-8')
                 data = json.loads(response_data)
                 new_token = data['result']['value']
@@ -143,11 +132,9 @@ def create_new_cloudflare_token():
                 response_dic['token'] = new_token
             #if request is unauthorized
             elif response.getcode() == 403:
-                print("4")
                 logging.info("create new token request is unauthorized")
             #if something went wrong
             else:
-                print("5")
                 logging.info("couldn't make create new token request")
             return response_dic
     except Exception as e:
