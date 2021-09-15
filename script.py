@@ -11,6 +11,7 @@ from python_hosts import Hosts, HostsEntry
 import logging
 import logging.handlers
 import json
+from datetime import datetime, date
 
 '''
 def list_instances(compute, project, zone):
@@ -44,6 +45,118 @@ def fetch_ip():
     ip = responseData.networkInterfaces.accessConfigs.natIP
     return ip '''
 
+#verify the current cloudflare toekn 
+def verify_cloudflare_token():
+    try:
+        request = Request('https://api.cloudflare.com/client/v4/user/tokens/verify', method='GET')
+        request.add_header('Authorization', 'Bearer %s' % CONFIG['cloudflare_token'])
+        request.add_header('Content-Type', 'application/json')
+        request.add_header('User-Agent', CONFIG['user_agent'])
+        with urlopen(request, timeout=20) as response:
+            #if request was successfull
+            if response.getcode() == 200:
+                response_data = response.read().decode(response.info().get_param('charset') or 'utf-8')
+                data = json.loads(response_data)
+                token_status = data['result']['status']
+                token_expiration_date = data['result']['expires_on']
+                print("token exp data **************" + token_expiration_date)
+                # if token is active and current date is before expiration date, rturn 1
+                if token_status == 'active' and datetime.now().strftime("%d/%m/%Y %H:%M:%S") > token_expiration_date:
+                    return 1
+            #if request is unauthorized
+            elif response.getcode() == 403:
+                logging.info("verify current token request is unauthorized")
+            #if something went wrong
+            else:
+                logging.info("couldn't make verify current token request")
+            return 0
+    except Exception as e:
+       print('VERIFY CURRENT TOKEN REQUEST EXCEPTION =========================================== '+ str(e))
+       logging.exception("verify current token exception : " + str(e) + "\n")
+       logging.exception("-------------------------------")
+       sys.exit()
+
+#issue a new token from cloudflare api
+def create_new_cloudflare_token():
+    try:
+        response_dic = {'status' : 404, 'token' : ''}
+        print("0")
+        create_new_token_data = {
+                                    "name":"readonly token",
+                                    "not_before": datetime.now(),
+                                    "expires_on": date.today(),
+                                    "policies":
+                                        [
+                                            {
+                                                "id":"f267e341f3dd4697bd3b9f71dd96247f",
+                                                "effect":"allow",
+                                                "resources":
+                                                    {
+                                                        "com.cloudflare.api.account.zone.eb78d65290b24279ba6f44721b3ea3c4":"*",
+                                                        "com.cloudflare.api.account.zone.22b1de5f1c0e4b3ea97bb1e963b06a43":"*"
+                                                    },
+                                                    "permission_groups":
+                                                        [
+                                                            {
+                                                                "id":"c8fed203ed3043cba015a93ad1616f1f",
+                                                                "name":"Zone Read"
+                                                            },
+                                                            {
+                                                                "id":"82e64a83756745bbbb1c9c2701bf816b",
+                                                                "name":"DNS Read"
+                                                            }
+                                                        ]
+                                            }
+                                        ],
+                                    "condition":
+                                        {
+                                            "request.ip" :
+                                                {
+                                                    "in":
+                                                        [
+                                                            "199.27.128.0/21",
+                                                            "2400:cb00::/32"
+                                                        ],
+                                                    "not_in":
+                                                        [
+                                                            "199.27.128.0/21",
+                                                            "2400:cb00::/32"
+                                                        ]
+                                                }
+                                        }
+                                }
+        print("1")
+        request = Request('https://api.cloudflare.com/client/v4/user/tokens', method='POST', data=urlencode(create_new_token_data).encode('ascii'))
+        request.add_header('Authorization', 'Bearer %s' % CONFIG['cloudflare_token'])
+        request.add_header('Content-Type', 'application/json')
+        request.add_header('User-Agent', CONFIG['user_agent'])
+        print("2")
+        with urlopen(request, timeout=20) as response:
+            print("4")
+            #if request was successfull
+            if response.getcode() == 200:
+                print("3")
+                response_data = response.read().decode(response.info().get_param('charset') or 'utf-8')
+                data = json.loads(response_data)
+                new_token = data['result']['value']
+                response_dic['status'] = 200
+                response_dic['token'] = new_token
+            #if request is unauthorized
+            elif response.getcode() == 403:
+                print("4")
+                logging.info("create new token request is unauthorized")
+            #if something went wrong
+            else:
+                print("5")
+                logging.info("couldn't make create new token request")
+            return response_dic
+    except Exception as e:
+       print('NEW TOKEN REQUEST EXCEPTION =========================================== '+ str(e))
+       logging.exception("create new token exception : " + str(e) + "\n")
+       logging.exception("-------------------------------")
+       sys.exit()
+
+####------------------------------------- main method -----------------------------
 def main(argv):
     #get user data from client registration form
     site_name = argv[0]
@@ -70,8 +183,15 @@ def main(argv):
 
     # Fetch existing DNS records
     try:
+        is_token_verified = verify_cloudflare_token()
+        access_token = CONFIG['cloudflare_token']
+        if is_token_verified != 1:
+            print ("token is not equal one ^^^^^^^^^^^^^^^^^^^^66")
+            access_token_dic = create_new_cloudflare_token()
+            if access_token_dic['status'] == 200 :
+                access_token = access_token_dic['token']
         request = Request('https://api.cloudflare.com/client/v4/zones?name='+domain+'&status=active&account.id='+CONFIG['cloudflare_account_id']+'&account.name='+CONFIG['cloudflare_account_name']+'&page=1&per_page=50&order=status&direction=desc&match=all')
-        request.add_header('Authorization', 'Bearer %s' % CONFIG['cloudflare_token'])
+        request.add_header('Authorization', 'Bearer %s' % access_token)
         request.add_header('Content-Type', 'application/json')
         request.add_header('User-Agent', CONFIG['user_agent'])
         with urlopen(request, timeout=20) as response:
@@ -80,16 +200,16 @@ def main(argv):
                 response_data = response.read().decode(response.info().get_param('charset') or 'utf-8')
                 data = json.loads(response_data)
                 if len(data['result']) > 0:
-                    print("the requested domain is already taken")
+                    logging.info("the requested domain is already taken")
                 else:
                     is_domain_available=1
-                    print("the requested domain is available")
+                    logging.info("the requested domain is available")
             #if request is unauthorized
             elif response.getcode() == 403:
-                print("sorry, you're not authorized to make the request")
+                logging.info("sorry, you're not authorized to make the request")
             #if something went wrong
             else:
-                print("sorry, we couldn't make the request")
+                logging.info("sorry, we couldn't make the request")
     except Exception as e:
        print('REQUEST EXCEPTION =========================================== '+ str(e))
        logging.exception("fetching records exception : " + str(e) + "\n")
