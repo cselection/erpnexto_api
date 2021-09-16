@@ -49,7 +49,7 @@ def fetch_ip():
 def verify_cloudflare_token():
     try:
         request = Request('https://api.cloudflare.com/client/v4/user/tokens/verify', method='GET')
-        request.add_header('Authorization', 'Bearer %s' % CONFIG['cloudflare_token'])
+        request.add_header('Authorization', 'Bearer %s' % CONFIG['cloudflare_read_tokens_token'])
         request.add_header('Content-Type', 'application/json')
         request.add_header('User-Agent', CONFIG['user_agent'])
         with urlopen(request, timeout=20) as response:
@@ -66,7 +66,7 @@ def verify_cloudflare_token():
             elif response.getcode() == 403:
                 logging.info("verify current token request is unauthorized")
             #if something went wrong
-            else:
+            else: 
                 logging.info("couldn't make verify current token request")
             return 0
     except Exception as e:
@@ -87,11 +87,11 @@ def create_new_cloudflare_token():
                                     "policies":
                                         [
                                             {
-                                                "id":"3ba83a056f95020fe1205d5b7d3bc3d2",
+                                                "id":"f267e341f3dd4697bd3b9f71dd96247f",
                                                 "effect":"allow",
                                                 "resources":
                                                     {
-                                                        "com.cloudflare.api.account.zone.2a8aca5cba7eb3c5796b491c564c8dc8":"*"
+                                                        "com.cloudflare.api.account.zone.2a8aca5cba7eb3c5796b491c564c8dc8": "*",
                                                     },
                                                 "permission_groups":
                                                     [
@@ -119,7 +119,7 @@ def create_new_cloudflare_token():
                                         }
                                 }
         request = Request('https://api.cloudflare.com/client/v4/user/tokens', method='POST', data=urlencode(create_new_token_data).encode('ascii'))
-        request.add_header('Authorization', 'Bearer %s' % CONFIG['cloudflare_token'])
+        request.add_header('Authorization', 'Bearer %s' % CONFIG['cloudflare_read_tokens_token'])
         request.add_header('Content-Type', 'application/json')
         request.add_header('User-Agent', CONFIG['user_agent'])
         with urlopen(request, timeout=20) as response:
@@ -171,7 +171,7 @@ def main(argv):
     # Fetch existing DNS records
     try:
         is_token_verified = verify_cloudflare_token()
-        access_token = CONFIG['cloudflare_token']
+        access_token = CONFIG['cloudflare_read_zone_token']
         if is_token_verified != 1:
             print ("token is not equal one ^^^^^^^^^^^^^^^^^^^^66")
             access_token_dic = create_new_cloudflare_token()
