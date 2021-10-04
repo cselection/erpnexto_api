@@ -58,9 +58,8 @@ def verify_cloudflare_token():
                 response_data = response.read().decode(response.info().get_param('charset') or 'utf-8')
                 data = json.loads(response_data)
                 token_status = data['result']['status']
-                token_expiration_date = data['result']['expires_on']
-                # if token is active and current date is before expiration date, rturn 1
-                if token_status == 'active' and datetime.now().strftime("%d/%m/%Y %H:%M:%S") > token_expiration_date:
+                # if token is active return 1
+                if token_status == 'active':
                     return 1
             #if request is unauthorized
             elif response.getcode() == 403:
@@ -177,8 +176,10 @@ def main(argv):
             access_token_dic = create_new_cloudflare_token()
             if access_token_dic['status'] == 200 :
                 access_token = access_token_dic['token']
-        request = Request('https://api.cloudflare.com/client/v4/zones?name='+domain+'&status=active&account.id='+CONFIG['cloudflare_account_id']+'&account.name='+CONFIG['cloudflare_account_name']+'&page=1&per_page=50&order=status&direction=desc&match=all')
+        request = Request('https://api.cloudflare.com/client/v4/zones?name='+domain+'&status=active&account.id='+CONFIG['cloudflare_account_id']+'&account.name='+CONFIG['cloudflare_account_name']+'&page=1&per_page=50&order=status&direction=desc&match=all', method='GET')
         request.add_header('Authorization', 'Bearer %s' % access_token)
+        request.add_header('X-Auth-Key', 'global api key')
+        request.add_header('X-Auth-Email', 'erpnextosas@gmail.com')
         request.add_header('Content-Type', 'application/json')
         request.add_header('User-Agent', CONFIG['user_agent'])
         with urlopen(request, timeout=20) as response:
