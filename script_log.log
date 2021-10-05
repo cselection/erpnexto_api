@@ -1,16 +1,7 @@
-ERROR:root:verify current token exception : 'expires_on'
+INFO:root:the requested domain is available
+ERROR:root:creating new record apported :HTTP Error 400: Bad Request
 Traceback (most recent call last):
-  File "script.py", line 61, in verify_cloudflare_token
-    token_expiration_date = data['result']['expires_on']
-KeyError: 'expires_on'
-ERROR:root:-------------------------------
-Traceback (most recent call last):
-  File "script.py", line 61, in verify_cloudflare_token
-    token_expiration_date = data['result']['expires_on']
-KeyError: 'expires_on'
-ERROR:root:fetching records exception : HTTP Error 403: Forbidden
-Traceback (most recent call last):
-  File "script.py", line 183, in main
+  File "script.py", line 224, in main
     with urlopen(request, timeout=20) as response:
   File "/usr/lib/python3.8/urllib/request.py", line 222, in urlopen
     return opener.open(url, data, timeout)
@@ -24,10 +15,47 @@ Traceback (most recent call last):
     result = func(*args)
   File "/usr/lib/python3.8/urllib/request.py", line 649, in http_error_default
     raise HTTPError(req.full_url, code, msg, hdrs, fp)
-urllib.error.HTTPError: HTTP Error 403: Forbidden
-ERROR:root:-------------------------------
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+INFO:root:the requested domain is available
+ERROR:root:creating new record apported :module 'urllib' has no attribute 'urlencode'
 Traceback (most recent call last):
-  File "script.py", line 183, in main
+  File "script.py", line 212, in main
+    data = urllib.urlencode(data)
+AttributeError: module 'urllib' has no attribute 'urlencode'
+INFO:root:the requested domain is available
+ERROR:root:creating new record apported :module 'urllib' has no attribute 'urlencode'
+Traceback (most recent call last):
+  File "script.py", line 212, in main
+    data = urllib.urlencode(data)
+AttributeError: module 'urllib' has no attribute 'urlencode'
+INFO:root:the requested domain is available
+ERROR:root:creating new record apported :POST data should be bytes, an iterable of bytes, or a file object. It cannot be of type str.
+Traceback (most recent call last):
+  File "script.py", line 224, in main
+    with urlopen(request, timeout=20) as response:
+  File "/usr/lib/python3.8/urllib/request.py", line 222, in urlopen
+    return opener.open(url, data, timeout)
+  File "/usr/lib/python3.8/urllib/request.py", line 522, in open
+    req = meth(req)
+  File "/usr/lib/python3.8/urllib/request.py", line 1285, in do_request_
+    raise TypeError(msg)
+TypeError: POST data should be bytes, an iterable of bytes, or a file object. It cannot be of type str.
+INFO:root:the requested domain is available
+ERROR:root:creating new record apported :POST data should be bytes, an iterable of bytes, or a file object. It cannot be of type str.
+Traceback (most recent call last):
+  File "script.py", line 224, in main
+    with urlopen(request, timeout=20) as response:
+  File "/usr/lib/python3.8/urllib/request.py", line 222, in urlopen
+    return opener.open(url, data, timeout)
+  File "/usr/lib/python3.8/urllib/request.py", line 522, in open
+    req = meth(req)
+  File "/usr/lib/python3.8/urllib/request.py", line 1285, in do_request_
+    raise TypeError(msg)
+TypeError: POST data should be bytes, an iterable of bytes, or a file object. It cannot be of type str.
+INFO:root:the requested domain is available
+ERROR:root:creating new record apported :HTTP Error 400: Bad Request
+Traceback (most recent call last):
+  File "script.py", line 223, in main
     with urlopen(request, timeout=20) as response:
   File "/usr/lib/python3.8/urllib/request.py", line 222, in urlopen
     return opener.open(url, data, timeout)
@@ -41,10 +69,11 @@ Traceback (most recent call last):
     result = func(*args)
   File "/usr/lib/python3.8/urllib/request.py", line 649, in http_error_default
     raise HTTPError(req.full_url, code, msg, hdrs, fp)
-urllib.error.HTTPError: HTTP Error 403: Forbidden
-ERROR:root:fetching records exception : HTTP Error 403: Forbidden
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+INFO:root:the requested domain is available
+ERROR:root:creating new record apported :HTTP Error 400: Bad Request
 Traceback (most recent call last):
-  File "script.py", line 184, in main
+  File "script.py", line 223, in main
     with urlopen(request, timeout=20) as response:
   File "/usr/lib/python3.8/urllib/request.py", line 222, in urlopen
     return opener.open(url, data, timeout)
@@ -58,129 +87,49 @@ Traceback (most recent call last):
     result = func(*args)
   File "/usr/lib/python3.8/urllib/request.py", line 649, in http_error_default
     raise HTTPError(req.full_url, code, msg, hdrs, fp)
-urllib.error.HTTPError: HTTP Error 403: Forbidden
-ERROR:root:-------------------------------
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+INFO:root:the requested domain is available
+ERROR:root:creating new record apported :can only concatenate str (not "int") to str
 Traceback (most recent call last):
-  File "script.py", line 184, in main
-    with urlopen(request, timeout=20) as response:
-  File "/usr/lib/python3.8/urllib/request.py", line 222, in urlopen
-    return opener.open(url, data, timeout)
-  File "/usr/lib/python3.8/urllib/request.py", line 531, in open
-    response = meth(req, response)
-  File "/usr/lib/python3.8/urllib/request.py", line 640, in http_response
-    response = self.parent.error(
-  File "/usr/lib/python3.8/urllib/request.py", line 569, in error
-    return self._call_chain(*args)
-  File "/usr/lib/python3.8/urllib/request.py", line 502, in _call_chain
-    result = func(*args)
-  File "/usr/lib/python3.8/urllib/request.py", line 649, in http_error_default
-    raise HTTPError(req.full_url, code, msg, hdrs, fp)
-urllib.error.HTTPError: HTTP Error 403: Forbidden
-ERROR:root:fetching records exception : HTTP Error 403: Forbidden
+  File "script.py", line 225, in main
+    print("&&&&&&&&&&&&&&&&&&&&&&&&"+request.status_code)
+TypeError: can only concatenate str (not "int") to str
+INFO:root:the requested domain is available
+INFO:root:the requested domain is available
+INFO:root:the requested domain is available
+INFO:root:the requested domain is available
+INFO:root:the requested domain is available
+INFO:root:the requested domain is available
+ERROR:root:creating new record apported :'Response' object is not subscriptable
 Traceback (most recent call last):
-  File "script.py", line 185, in main
-    with urlopen(request, timeout=20) as response:
-  File "/usr/lib/python3.8/urllib/request.py", line 222, in urlopen
-    return opener.open(url, data, timeout)
-  File "/usr/lib/python3.8/urllib/request.py", line 531, in open
-    response = meth(req, response)
-  File "/usr/lib/python3.8/urllib/request.py", line 640, in http_response
-    response = self.parent.error(
-  File "/usr/lib/python3.8/urllib/request.py", line 569, in error
-    return self._call_chain(*args)
-  File "/usr/lib/python3.8/urllib/request.py", line 502, in _call_chain
-    result = func(*args)
-  File "/usr/lib/python3.8/urllib/request.py", line 649, in http_error_default
-    raise HTTPError(req.full_url, code, msg, hdrs, fp)
-urllib.error.HTTPError: HTTP Error 403: Forbidden
-ERROR:root:-------------------------------
+  File "script.py", line 220, in main
+    print("ya mohamad"+request['result']['id'])
+TypeError: 'Response' object is not subscriptable
+INFO:root:the requested domain is available
+ERROR:root:creating new record apported :'Response' object is not subscriptable
 Traceback (most recent call last):
-  File "script.py", line 185, in main
-    with urlopen(request, timeout=20) as response:
-  File "/usr/lib/python3.8/urllib/request.py", line 222, in urlopen
-    return opener.open(url, data, timeout)
-  File "/usr/lib/python3.8/urllib/request.py", line 531, in open
-    response = meth(req, response)
-  File "/usr/lib/python3.8/urllib/request.py", line 640, in http_response
-    response = self.parent.error(
-  File "/usr/lib/python3.8/urllib/request.py", line 569, in error
-    return self._call_chain(*args)
-  File "/usr/lib/python3.8/urllib/request.py", line 502, in _call_chain
-    result = func(*args)
-  File "/usr/lib/python3.8/urllib/request.py", line 649, in http_error_default
-    raise HTTPError(req.full_url, code, msg, hdrs, fp)
-urllib.error.HTTPError: HTTP Error 403: Forbidden
-ERROR:root:fetching records exception : HTTP Error 403: Forbidden
+  File "script.py", line 220, in main
+    print("ya mohamad"+request['result'])
+TypeError: 'Response' object is not subscriptable
+INFO:root:the requested domain is available
+ERROR:root:creating new record apported :'Response' object has no attribute 'codes'
 Traceback (most recent call last):
-  File "script.py", line 184, in main
-    with urlopen(request, timeout=20) as response:
-  File "/usr/lib/python3.8/urllib/request.py", line 222, in urlopen
-    return opener.open(url, data, timeout)
-  File "/usr/lib/python3.8/urllib/request.py", line 531, in open
-    response = meth(req, response)
-  File "/usr/lib/python3.8/urllib/request.py", line 640, in http_response
-    response = self.parent.error(
-  File "/usr/lib/python3.8/urllib/request.py", line 569, in error
-    return self._call_chain(*args)
-  File "/usr/lib/python3.8/urllib/request.py", line 502, in _call_chain
-    result = func(*args)
-  File "/usr/lib/python3.8/urllib/request.py", line 649, in http_error_default
-    raise HTTPError(req.full_url, code, msg, hdrs, fp)
-urllib.error.HTTPError: HTTP Error 403: Forbidden
-ERROR:root:-------------------------------
+  File "script.py", line 219, in main
+    if response.status_code == response.codes.ok :
+AttributeError: 'Response' object has no attribute 'codes'
+INFO:root:the requested domain is available
+INFO:root:the requested domain is available
+ERROR:root:creating new record apported :list indices must be integers or slices, not str
 Traceback (most recent call last):
-  File "script.py", line 184, in main
-    with urlopen(request, timeout=20) as response:
-  File "/usr/lib/python3.8/urllib/request.py", line 222, in urlopen
-    return opener.open(url, data, timeout)
-  File "/usr/lib/python3.8/urllib/request.py", line 531, in open
-    response = meth(req, response)
-  File "/usr/lib/python3.8/urllib/request.py", line 640, in http_response
-    response = self.parent.error(
-  File "/usr/lib/python3.8/urllib/request.py", line 569, in error
-    return self._call_chain(*args)
-  File "/usr/lib/python3.8/urllib/request.py", line 502, in _call_chain
-    result = func(*args)
-  File "/usr/lib/python3.8/urllib/request.py", line 649, in http_error_default
-    raise HTTPError(req.full_url, code, msg, hdrs, fp)
-urllib.error.HTTPError: HTTP Error 403: Forbidden
-INFO:root:the requested domain is already taken
-ERROR:root:creating new record apported :'url'
+  File "script.py", line 222, in main
+    print(response_data['errors']['message'])
+TypeError: list indices must be integers or slices, not str
+INFO:root:the requested domain is available
+ERROR:root:creating new record apported :'NoneType' object is not subscriptable
 Traceback (most recent call last):
-  File "script.py", line 209, in main
-    url = CONFIG['url'] + "/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=add_zone_record&cpanel_xmlapi_apiversion=2&domain="+ domain + "&name=" + record_name + "&type=" + record_type + "&ttl=" + ttl + "&address=" + ip
-KeyError: 'url'
-ERROR:root:fetching records exception : HTTP Error 403: Forbidden
-Traceback (most recent call last):
-  File "script.py", line 184, in main
-    with urlopen(request, timeout=20) as response:
-  File "/usr/lib/python3.8/urllib/request.py", line 222, in urlopen
-    return opener.open(url, data, timeout)
-  File "/usr/lib/python3.8/urllib/request.py", line 531, in open
-    response = meth(req, response)
-  File "/usr/lib/python3.8/urllib/request.py", line 640, in http_response
-    response = self.parent.error(
-  File "/usr/lib/python3.8/urllib/request.py", line 569, in error
-    return self._call_chain(*args)
-  File "/usr/lib/python3.8/urllib/request.py", line 502, in _call_chain
-    result = func(*args)
-  File "/usr/lib/python3.8/urllib/request.py", line 649, in http_error_default
-    raise HTTPError(req.full_url, code, msg, hdrs, fp)
-urllib.error.HTTPError: HTTP Error 403: Forbidden
-ERROR:root:-------------------------------
-Traceback (most recent call last):
-  File "script.py", line 184, in main
-    with urlopen(request, timeout=20) as response:
-  File "/usr/lib/python3.8/urllib/request.py", line 222, in urlopen
-    return opener.open(url, data, timeout)
-  File "/usr/lib/python3.8/urllib/request.py", line 531, in open
-    response = meth(req, response)
-  File "/usr/lib/python3.8/urllib/request.py", line 640, in http_response
-    response = self.parent.error(
-  File "/usr/lib/python3.8/urllib/request.py", line 569, in error
-    return self._call_chain(*args)
-  File "/usr/lib/python3.8/urllib/request.py", line 502, in _call_chain
-    result = func(*args)
-  File "/usr/lib/python3.8/urllib/request.py", line 649, in http_error_default
-    raise HTTPError(req.full_url, code, msg, hdrs, fp)
-urllib.error.HTTPError: HTTP Error 403: Forbidden
+  File "script.py", line 222, in main
+    print(response_data['errors']['message'])
+TypeError: 'NoneType' object is not subscriptable
+INFO:root:the requested domain is available
+INFO:root:the requested domain is available
+INFO:root:the requested domain is available

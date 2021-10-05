@@ -13,6 +13,7 @@ cors = CORS(app, resource={
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+#if os.path.exists(filename):
 UPLOAD_FOLDER = '/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER 
 
