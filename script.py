@@ -229,35 +229,41 @@ def main(argv):
 
 
     if domain_created == 1 : 
-        #make the suitable environment for the erpnext installation
-        '''child = pexpect.spawn("apt install git python-dev redis-server")
-        child = pexpect.spawn("apt-get install software-properties-common")
-        child = pexpect.spawn("apt-get update")
-        child = pexpect.spawn("apt-get install mariadb-server-10.3")
-        child = pexpect.spawn("pip install frappe-bench")'''
-
         #write bench shell commands to install the new erpnext site
-        child = pexpect.spawn("bench config dns-mulitenant on")
-        child = pexpect.spawn("bench new-site" + site_name)
-        child.expect("MySQL root password:")
-        child.sendline(mysql_password)
-        child.expect("Set Administrator password:")
-        child.sendline(admin_password)
-        child.expect("Re-enter Administrator password:")
-        child.sendline(admin_password)
+        pexpect.run("bench config dns-mulitenant on")
+        try:
+            child = pexpect.spawn("bench new-site" + site_name)
+            if not child.EOF : 
+                mysql_password_match = child.expect("MySQL root password:")
+                if mysql_password_match == 0 :
+                    child.sendline(mysql_password)
+                admin_password_match = child.expect("Set Administrator password:")
+                if admin_password_match == 0 :
+                    child.sendline(admin_password)
+                admin_password_reenter : child.expect("Re-enter Administrator password:")
+                if admin_password_reenter == 0 : 
+                    child.sendline(admin_password)
+        except EOF:
+            print("EOF")
+        except TIMEOUT:
+            print("TIMEOUT")
+
+        pexpect.run("bench setup add-domain "+domain+" --site "+site_name)
         time.sleep(2)
         child = pexpect.spawn("bench setup nginx")
-        child.expect("[Y/N]:")
-        child.sendline("y")
-        out = subprocess.Popen(['sudo', 'service','nginx', 'reload'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        out = subprocess.Popen(['bench', '--site', site_name, 'install-app', 'erpnext'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        installation_match = child.expect("[Y/N]")
+        if installation_match == 0 : 
+            child.sendline("y")
+        pexpect.run("sudo service nginx reload")
+        pexpect.run("bench --site "+site_name+" install-app erpnext")
+        #pexpect.run("bench set-nginx-port [sitename] [port])  :::: adding port to the new site
 
         if plan == 'free':
             print('FREE EXCEPTION =========================================== ')
-            out = subprocess.Popen(['bench', '--site', site_name, 'set-limits', '--limit', 'users', 3, '--limit', 'space', 0.157], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        elif plan == 'standard':
+            pexpect.run("bench --site "+site_name+" set-limits --limit users 3 --limit space 0.157")
+        elif plan == 'standard' or plan === 'microsoft_standard':
             print('STANDARD EXCEPTION =========================================== ')
-            out = subprocess.Popen(['bench', '--site', site_name, 'set-limit', 'users', 8], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            pexpect.run("bench --site "+site_name+" set-limit users 5")
 
         #open /etc/hosts and add the new sub-domain as a new entry
         my_hosts = Hosts()
@@ -266,7 +272,7 @@ def main(argv):
         my_hosts.write()
 
         #start the user erpnext instance
-        out = subprocess.Popen(['bench', 'start'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        pexpect.run("bench start")
 
 if __name__ == "__main__":
     if len(sys.argv) != 5:
