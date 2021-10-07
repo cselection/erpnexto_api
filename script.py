@@ -3,9 +3,6 @@ import sys
 from subprocess import call
 import time
 import base64
-from urllib.parse import urlencode
-from urllib.request import urlopen,Request
-from urllib import parse
 import xml.etree.ElementTree as etree
 import pexpect
 from python_hosts import Hosts, HostsEntry
@@ -14,6 +11,8 @@ import logging.handlers
 import json
 from datetime import datetime, date
 import requests
+from urllib.request import urlopen,Request
+
 '''
 def list_instances(compute, project, zone):
     result = compute.instances().list(project=project, zone=zone).execute()
@@ -79,7 +78,6 @@ def verify_cloudflare_token():
 def create_new_cloudflare_token():
     try:
         response_dic = {'status' : 404, 'token' : ''}
-        print("0")
         create_new_token_data = {
                                     "name":"readonly token",
                                     "not_before": datetime.now(),
@@ -229,50 +227,84 @@ def main(argv):
 
 
     if domain_created == 1 : 
+        print("-1")
+        pexpect.run("cd ~/frappe-bench")
+        print("erpnext 0")
         #write bench shell commands to install the new erpnext site
+        pexpect.run("sudo systemctl start mariadb")
+        print("erpnext 1")
         pexpect.run("bench config dns-mulitenant on")
+        print("erpnext 2")
         try:
             child = pexpect.spawn("bench new-site" + site_name)
-            if not child.EOF : 
+            print("erpnext 3")
+            if not child.EOF :
+                print("erpnext 4") 
                 mysql_password_match = child.expect("MySQL root password:")
+                print("erpnext 5")
                 if mysql_password_match == 0 :
+                    print("erpnext 6")
                     child.sendline(mysql_password)
+                    print("erpnext 7")
                 admin_password_match = child.expect("Set Administrator password:")
+                print("erpnext 8")
                 if admin_password_match == 0 :
+                    print("erpnext 9")
                     child.sendline(admin_password)
-                admin_password_reenter : child.expect("Re-enter Administrator password:")
-                if admin_password_reenter == 0 : 
+                    print("erpnext 10")
+                admin_password_reenter = child.expect("Re-enter Administrator password:")
+                print("erpnext 11")
+                if admin_password_reenter == 0 :
+                    print("erpnext 12") 
                     child.sendline(admin_password)
         except EOF:
+            print("erpnext 13")
             print("EOF")
         except TIMEOUT:
+            print("erpnext 14")
             print("TIMEOUT")
 
-        pexpect.run("bench setup add-domain "+domain+" --site "+site_name)
+        print("erpnext 15")
+        pexpect.run("bench setup add-domain "+domain+" --site "+site_name) #long installation
+        print("erpnext 16")
         time.sleep(2)
+        print("erpnext 17")
         child = pexpect.spawn("bench setup nginx")
-        installation_match = child.expect("[Y/N]")
-        if installation_match == 0 : 
+        print("erpnext 18")
+        installation_match = child.expect("[Y/N]:")
+        print("erpnext 19")
+        if installation_match == 0 :
+            print("erpnext 20") 
             child.sendline("y")
         pexpect.run("sudo service nginx reload")
+        print("erpnext 21")
+        pexpect.run("bench get-app erpnext https://github.com/frappe/erpnext.git") #long installation
+        print("erpnext 22")
         pexpect.run("bench --site "+site_name+" install-app erpnext")
-        #pexpect.run("bench set-nginx-port [sitename] [port])  :::: adding port to the new site
+        print("erpnext 23")
 
         if plan == 'free':
+            print("erpnext 24")
             print('FREE EXCEPTION =========================================== ')
             pexpect.run("bench --site "+site_name+" set-limits --limit users 3 --limit space 0.157")
-        elif plan == 'standard' or plan === 'microsoft_standard':
+        elif plan == 'standard' or plan == 'microsoft_standard':
+            print("erpnext 25")
             print('STANDARD EXCEPTION =========================================== ')
             pexpect.run("bench --site "+site_name+" set-limit users 5")
 
+        print("erpnext 25")
         #open /etc/hosts and add the new sub-domain as a new entry
         my_hosts = Hosts()
+        print("erpnext 26")
         new_entry = HostsEntry(entry_type='ipv4', address=ip, names=[site_name])
+        print("erpnext 27")
         my_hosts.add([new_entry])
+        print("erpnext 28")
         my_hosts.write()
-
+        print("erpnext 29")
         #start the user erpnext instance
         pexpect.run("bench start")
+        print("erpnext 30")
 
 if __name__ == "__main__":
     if len(sys.argv) != 5:

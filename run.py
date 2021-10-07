@@ -5,7 +5,7 @@ import logging
 import logging.handlers
 
 if __name__ = "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5002)
     scheduler = BackgroundScheduler()
     scheduler.add_job(func=truncate_logging_file, trigger="interval", seconds=60)
     scheduler.start()
