@@ -141,6 +141,49 @@ def create_new_cloudflare_token():
        logging.exception("-------------------------------")
        sys.exit()
 
+
+def site_install_erpnext(plan, domain):
+    print("site install erp next")
+    child = pexpect.spawn("bench --site " + domain + " install-app erpnext", timeout = 3600)
+    index = child.expect([".*\$ ", pexpect.EOF, pexpect.TIMEOUT])
+    if index == 0 or index == 1 : 
+        print("prompt $")
+        site_set_limits(plan, domain)
+    elif index == 2 :
+        print("1 expect timeout")    
+
+def site_set_limits(plan, domain):
+    print("site set limits")
+    if plan == 'free':
+        child = pexpect.spawn("bench --site "+domain+" set-limits --limit users 3 --limit space 0.157", timeout = 3600)
+        index = child.expect([".*\$ ", pexpect.EOF, pexpect.TIMEOUT])
+        if index == 0 or index == 1 : 
+            print("prompt $")
+        elif index == 2 :
+            print("2 1 expect timeout")
+    elif plan == 'standard' or plan == 'microsoft_standard':
+        child = pexpect.spawn("bench --site "+domain+" set-limit users 5")
+        index = child.expect(["$ ", pexpect.EOF, pexpect.TIMEOUT])
+        if index == 0 or index == 1 : 
+            print("prompt $")
+        elif index == 2 :
+            print("2 2 expect timeout")
+    save_site_to_hosts(domain)
+
+def save_site_to_hosts(domain):
+    print("save site to hosts")
+    my_hosts = Hosts()
+    new_entry = HostsEntry(entry_type='ipv4', address='127.0.0.1', names=[domain])
+    my_hosts.add([new_entry])
+    my_hosts.write()
+    start_bench(domain)
+
+def start_bench(domain):
+    print("start bench")
+    pexpect.run("bench --site " + domain + "clear-cache")
+    pexpect.run("bench start")
+    print("erpnext 0000")
+    
 ####------------------------------------- main method -----------------------------
 def main(argv):
     #get user data from client registration form
@@ -160,6 +203,7 @@ def main(argv):
     mysql_username = CONFIG['mysql_username']
     mysql_password = CONFIG['mysql_password']
     admin_password = CONFIG['admin_password']
+    system_password = CONFIG['system_password']
 
     #prepare some helper data
     is_domain_available=0
@@ -229,52 +273,21 @@ def main(argv):
 
     domain += '.'+CONFIG['subdomain']
     if domain_created == 1 : 
-        try:
-            old_pwd = os.getcwd()
-            os.chdir("/home/cselection/frappe-bench/")
-            #should check if current working directory has been successfully changed
-            #write bench shell commands to install the new erpnext site
-            print("erpnext 1")
-            pexpect.run("sudo systemctl start mariadb")
-            pexpect.run("bench config dns-mulitenant on")
-            child = pexpect.spawn("bench new-site " + domain + " --admin-password " + admin_password + " --mariadb-root-username " + mysql_username + " --mariadb-root-password " + mysql_password )
-        except pexpect.EOF:
-            print("EOF")
-        except pexpect.TIMEOUT:
-            print("TIMEOUT")
-        except Exception as e:  
-            logging.exception("python pexpect exception 1 :" + str(e))
+        old_pwd = os.getcwd()
+        os.chdir("/home/cselection/frappe-bench/")
+        print("erpnext 1")
+        pexpect.run("sudo systemctl start mariadb")
+        pexpect.run("bench config dns-mulitenant on")
+        print("erpnext 2")
+        child = pexpect.spawn("bench new-site " + domain + " --admin-password " + admin_password + " --mariadb-root-username " + mysql_username + " --mariadb-root-password " + mysql_password , timeout=3600, encoding='utf-8')
+        index = child.expect([".*\$ ", pexpect.EOF, pexpect.TIMEOUT])
+        if index == 0 or index == 1 : 
+            print("prompt $")
+            site_install_erpnext(plan, domain)
+        elif index == 1 : 
+            print("expect timout")
+            
 
-        pexpect.run("bench setup add-domain "+domain+" --site "+domain)                 #long installation
-        pexpect.run("sudo service nginx reload")
-        pexpect.run("bench get-app erpnext https://github.com/frappe/erpnext.git")      #long installation
-        pexpect.run("bench --site " + domain + " install-app erpnext")
-        pexpect.run("bench --site " + domain + " reload-doc 'Website Settings'")
-
-        if plan == 'free':
-            print('FREE EXCEPTION =========================================== ')
-            pexpect.run("bench --site "+domain+" set-limits --limit users 3 --limit space 0.157")
-        elif plan == 'standard' or plan == 'microsoft_standard':
-            print('STANDARD EXCEPTION =========================================== ')
-            pexpect.run("bench --site "+domain+" set-limit users 5")
-
-        #open /etc/hosts and add the new sub-domain as a new entry
-        my_hosts = Hosts()
-        new_entry = HostsEntry(entry_type='ipv4', address='127.0.0.1', names=[domain])
-        my_hosts.add([new_entry])
-        my_hosts.write()
-
-        #clear cache, update and restart the user erpnext instance
-        #pexpect.run("set-nginx-port " + domain + " 80")
-        #pexpect.run("bench set-config maintenance_mode 0")
-        #pexpect.run("bench set-config developer_mode 0")
-        #pexpect.run("bench build")
-        #pexpect.run("bench --site " + domain + "migrate")
-        #pexpect.run("bench --site " + domain + "clear-cache")
-        #pexpect.run("bench update")
-        pexpect.run("bench start")
-        #pexpect.run("bench restart")
-        print("erpnext 0000")
 
 if __name__ == "__main__":
     if len(sys.argv) != 5:

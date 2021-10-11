@@ -3,6 +3,7 @@ CONFIG = {
     'mysql_username':'root',
     'mysql_password':'root',
     'admin_password':'Qwe-123',
+    'system_password' : 'Qwe-123',
     'record_type':'A',
     'record_ttl':'14400',
     'subdomain':'erpnexto.com',
