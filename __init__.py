@@ -60,7 +60,7 @@ def signup():
         os.system('python script.py '+site_name+" "+business_mail+" "+phone+" "+password+" "+plan)
         return jsonify(message="you have successfully registered in our system")
 
-
+'''
 @app.route("/send-quote", methods=['POST'])
 @cross_origin()
 def processCustomizationPlanQuote():
@@ -79,7 +79,7 @@ def processCustomizationPlanQuote():
         msg.body = "new erpnexto customization plan quote request"
         mail.send(msg)
         return jsonify(message="you have send the mail successfully")
-
+'''
 
 @app.route("/developer-CV", methods=['POST'])
 @cross_origin()
