@@ -68,7 +68,7 @@ def processCustomizationPlanQuote():
     phone = None
     companyName = None
     if request_data:
-	if 'email' in request_data:
+	    if 'email' in request_data:
             email = request_data['email']
         if 'phone' in request_data: 
             phone = request_data['phone']
