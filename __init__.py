@@ -18,6 +18,7 @@ ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 UPLOAD_FOLDER = '/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+
 '''app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USERNAME'] = 'mohamedyossif577@gmail.com'
