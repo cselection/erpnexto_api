@@ -101,7 +101,7 @@ def processImplementerCV():
         request_data = request.get_json()
         name = None
         company_name = None
-	email = None
+	    email = None
         if request_data:
             if 'name' in request_data:
                 name = request_data['name']
