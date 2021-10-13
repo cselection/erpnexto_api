@@ -39,7 +39,9 @@ mail= Mail(app)
 @app.route("/signup", methods=['POST'])
 @cross_origin()
 def signup():
-    return "hello from signup"
+    files = os.listdir(os.getcwd())
+    for f in files:
+	    print(f)
     request_data = request.get_json()
     site_name = None
     business_mail = None
