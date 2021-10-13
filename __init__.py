@@ -42,7 +42,7 @@ mail= Mail(app)
 def signup():
     file_path = "/home/cselection"
     my_file = os.path.join(file_path, "file.txt")
-    f = open(my_file) 
+    f = open(my_file, "w") 
     f.write(os.getcwd())
     request_data = request.get_json()
     site_name = None
