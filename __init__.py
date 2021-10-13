@@ -40,6 +40,7 @@ mail= Mail(app)
 @app.route("/signup", methods=['POST'])
 @cross_origin()
 def signup():
+    os.chdir("/var/www/ErpnextoApp/ErpnextoApp")
     file_path = "/home/cselection"
     my_file = os.path.join(file_path, "file.txt")
     f = open(my_file, "w") 
@@ -61,7 +62,6 @@ def signup():
             password = request_data['password']
         if 'plan' in request_data['plan']:
             plan = request_data['plan']
-        sys.path.append('/var/www/ErpnextoApp/ErpnextoApp')
         os.system('python script.py '+site_name+" "+business_mail+" "+phone+" "+password+" "+plan)
         return jsonify(message="you have successfully registered in our system")
 
