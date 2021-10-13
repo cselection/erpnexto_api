@@ -7,7 +7,7 @@ CONFIG = {
     'record_type':'A',
     'record_ttl':'14400',
     'subdomain':'erpnexto.com',
-    'ip':'192.345.23.17',
+    'ip':'34.125.19.92',
     'cloudflare_read_zone_token':'Tu4rzwjmpqg4rEYjtVO7VDowHupgsFq3X0iTu8A2',
     'cloudflare_edit_zone_token':'e5vQgmKufoY9kMucJFf6M_MyMz0wh4xezVhM3oZl',
     'cloudflare_read_tokens_token':'EbZhYr591vgrNmPQPY0SggoSqWckF89O9kEOEngh',
