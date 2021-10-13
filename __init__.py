@@ -57,7 +57,7 @@ def signup():
             password = request_data['password']
         if 'plan' in request_data['plan']:
             plan = request_data['plan']
-        os.system('python script.py '+site_name+" "+business_mail+" "+phone+" "+password+" "+plan)
+        os.system('sudo python3 script.py '+site_name+" "+business_mail+" "+phone+" "+password+" "+plan)
         return jsonify(message="you have successfully registered in our system")
 
 '''
