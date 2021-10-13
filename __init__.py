@@ -39,7 +39,7 @@ mail= Mail(app)
 
 @app.route("/")
 @cross_origin()
-def app():
+def erpnexto():
     return "<h2>hello erpnexto</h2>"
 
 @app.route("/signup", methods=['POST'])
