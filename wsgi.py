@@ -1,4 +1,4 @@
-from ErpnextoApp import app
+from ErpnextoApp.__init__ import app
 
 if __name__ == "__main__":
     app.run()
