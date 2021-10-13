@@ -40,7 +40,9 @@ mail= Mail(app)
 @app.route("/signup", methods=['POST'])
 @cross_origin()
 def signup():
-    f = open("currentdir", "a")
+    file_path = "/home/cselection"
+    my_file = os.path.join(file_path, "file.txt")
+    f = open(my_file) 
     f.write(os.getcwd())
     request_data = request.get_json()
     site_name = None
