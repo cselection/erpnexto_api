@@ -1,9 +1,10 @@
-import os
+import os, sys
 from flask import Flask
 from flask import jsonify, request
 from flask_cors import CORS, cross_origin
 from werkzeug.utils import secure_filename
 from flask_mail import Mail, Message
+import pexpect
 
 app = Flask(__name__)
 cors = CORS(app, resource={
@@ -39,8 +40,10 @@ mail= Mail(app)
 @app.route("/signup", methods=['POST'])
 @cross_origin()
 def signup():
+    sys.path.append('/var/www/ErpnextoApp/ErpnextoApp')
     files = os.listdir(os.getcwd())
     for f in files:
+        print("hamada")
 	    print(f)
     request_data = request.get_json()
     site_name = None
