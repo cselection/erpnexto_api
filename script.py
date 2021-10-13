@@ -279,7 +279,7 @@ def main(argv):
         pexpect.run("sudo systemctl start mariadb")
         pexpect.run("bench config dns-mulitenant on")
         print("erpnext 2")
-        child = pexpect.spawn("bench new-site " + domain + " --admin-password " + admin_password + " --mariadb-root-username " + mysql_username + " --mariadb-root-password " + mysql_password , timeout=3600, encoding='utf-8')
+        child = pexpect.spawn("bench new-site " + domain + " --admin-password " + password + " --mariadb-root-username " + mysql_username + " --mariadb-root-password " + mysql_password , timeout=3600, encoding='utf-8')
         index = child.expect([".*\$ ", pexpect.EOF, pexpect.TIMEOUT])
         if index == 0 or index == 1 : 
             print("prompt $")
