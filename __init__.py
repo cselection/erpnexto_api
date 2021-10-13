@@ -37,7 +37,7 @@ mail= Mail(app)
 
 ## COMMAND TO RUN THE APP : python -m flask run / flask run
 
-@app.route("/", methods=['GET'])
+@app.route("/")
 @cross_origin()
 def app():
     return "<h2>hello erpnexto</h2>"
