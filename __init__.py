@@ -45,24 +45,52 @@ def erpnexto():
 @app.route("/signup", methods=['POST'])
 @cross_origin()
 def signup():
-    os.chdir("/var/www/ErpnextoApp/ErpnextoApp")
+    #accept request data
+    request_data = request.get_json()
+    company_name=None
+    site_name = None
+    email = None
+    phone = None
+    plan = 'free'
+    if request_data:
+        if 'company_name' in request_data:
+            company_name = request_data['company_name']
+        if 'site_name' in request_data:
+            site_name = request_data['site_name']
+        if 'email' in request_data:
+            email = request_data['email']
+        if 'phone' in request_data:
+            phone = request_data['phone']
+        if 'plan' in request_data['plan']:
+            plan = request_data['plan']
+    #add data to database
+    #add data to mautic
+    #send confirmation mail with code
+    return jsonify(message="you have successfully registered in our system")
+
+@app.route("/check-confirmation-code", methods=['POST'])
+@cross_origin()
+def check_confirmation_code():
+    return jsonify(message="confirmation code is valid")
+
+@app.route("/install-erpnexto", methods=['POST'])
+@cross_origin()
+def install_erpnexto():
+    os.chdir("/var/www/ErpnextoApp/")
     file_path = "/home/cselection"
     my_file = os.path.join(file_path, "file.txt")
     f = open(my_file, "w") 
     f.write(os.getcwd())
     request_data = request.get_json()
     site_name = None
-    business_mail = None
-    phone = None
+    email = None
     password = None
     plan = 'free'
     if request_data:
         if 'site_name' in request_data:
             site_name = request_data['site_name']
-        if 'business_mail' in request_data:
-            business_mail = request_data['business_mail']
-        if 'phone' in request_data:
-            phone = request_data['phone']
+        if 'email' in request_data:
+            email = request_data['email']
         if 'password' in request_data:
             password = request_data['password']
         if 'plan' in request_data['plan']:
@@ -70,7 +98,6 @@ def signup():
         os.system('python script.py '+site_name+" "+business_mail+" "+phone+" "+password+" "+plan)
         return jsonify(message="you have successfully registered in our system")
 
-'''
 @app.route("/send-quote", methods=['POST'])
 @cross_origin()
 def processCustomizationPlanQuote():
@@ -89,7 +116,7 @@ def processCustomizationPlanQuote():
         msg.body = "new erpnexto customization plan quote request"
         mail.send(msg)
         return jsonify(message="you have send the mail successfully")
-'''
+
 
 @app.route("/developer-CV", methods=['POST'])
 @cross_origin()
@@ -103,7 +130,7 @@ def precessDeveloperCV():
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             return jsonify({"response": "success"})
-'''
+
 @app.route("/implementer-CV", methods=['POST'])
 @cross_origin()
 def processImplementerCV():
@@ -134,7 +161,4 @@ def processImplementerCV():
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-'''
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=Flase)
