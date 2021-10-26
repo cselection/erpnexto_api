@@ -8,6 +8,7 @@ import random
 import string
 import json
 import mariadb
+import base64
 
 app = Flask(__name__)
 cors = CORS(app, resource={
@@ -22,17 +23,21 @@ db_config = {
     'password': 'root',
     'database': 'erpnexto'
 }
-UPLOAD_FOLDER = '/uploads'
+DEVELOPER_UPLOAD_FOLDER = os.getcwd()+'/uploads/developers'
+IMPLEMENTER_UPLOAD_FOLDER = os.getcwd()+'/uploads/implementers'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
 app.config['CORS_HEADERS'] = 'Content-Type'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['DEVELOPER_UPLOAD_FOLDER'] = DEVELOPER_UPLOAD_FOLDER
+app.config['IMPLEMENTER_UPLOAD_FOLDER'] = IMPLEMENTER_UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USERNAME'] = 'mbendary577@gmail.com'
 app.config['MAIL_PASSWORD'] = 'MohamedBendary@577'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_ASCII_ATTACHMENTS'] = True   
 mail = Mail(app)
 
 ## COMMAND TO RUN THE APP : python -m flask run / flask run
@@ -168,40 +173,58 @@ def processCustomizationPlanQuote():
 @cross_origin()
 def precessDeveloperCV():
         if 'developer_cv' not in request.files:
-            return jsonify({"response": "no files selected"})
-        file = request.files['developer_cv']
-        if file.filename == '':
-            return jsonify({"response": "no files selected"})
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return jsonify({"response": "success"})
+            return {"message": "no files selected"}, 400
+        file_data = request.files['developer_cv']
+        if file_data.filename == '':
+            return {"message": "no files selected"}, 400
+        if file_data and allowed_file(file_data.filename):
+            filename = secure_filename(file_data.filename)
+            file_path = os.path.join(app.config['DEVELOPER_UPLOAD_FOLDER'], filename)
+            file_data.save(file_path)
+            #send developer resume in mail to recruiters
+            try:
+                developer_cv = app.config['DEVELOPER_UPLOAD_FOLDER']+'/'+filename
+                msg = Message("ERPNexto Technical Partnership Request", sender = 'mbendary577@gmail.com', recipients = ['mohamedyossif577@gmail.com'])
+                msg.body = "a new developer requested ERPNexto technical partnership"
+                with app.open_resource(file_path) as cv_file:
+                    msg.attach(developer_cv, "text/plain", cv_file.read())
+                mail.send(msg)
+            except Exception as e:
+                print('MAIL EXCEPTION =========================================== '+ str(e))
+            return {"message": "your resume was sent successfully, we will contact you soon"}, 200
+        else:
+            return {"message": "Allowed file types are txt, pdf, png, jpg"}, 400
+
 
 @app.route("/implementer-CV", methods=['POST'])
 @cross_origin()
 def processImplementerCV():
     # get implementer personal data
-    request_data = request.get_json()
-    name = None
-    company_name = None
-    email = None
-    if request_data:
-        if 'name' in request_data:
-            name = request_data['name']
-        if 'companyName' in request_data:
-            company_name = request_data['companyName']
-        if 'email' in request_data:
-            email = request_data['email']
-        # get implementer cv file
-        if 'implementer-cv' not in request.files:
-            return jsonify({"response": "no files selected"})
-        file = request.files['developer_cv']
-        if file.filename == '':
-            return jsonify({"response": "no files selected"})
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return jsonify({"response": "success"})
+    name = request.args.get('name')
+    companyName = request.args.get('companyName')
+    email = request.args.get('email')
+    if 'implementer_cv' not in request.files:
+        return {"message": "no files selected"}, 400
+    file_data = request.files['implementer_cv']
+    if file_data == None:
+        return {"message": "no files selected"}, 400 
+    if file_data.filename == '':
+        return {"message": "no files selected"}, 400
+    if file_data and allowed_file(file_data.filename):
+        filename = secure_filename(file_data.filename)
+        file_path = os.path.join(app.config['IMPLEMENTER_UPLOAD_FOLDER'], filename)
+        file_data.save(file_path)
+        #send implementer resume in mail to recruiters
+        try:
+            implementer_cv = app.config['IMPLEMENTER_UPLOAD_FOLDER']+'/'+filename
+            msg = Message("ERPNexto Implementation Partnership Request", sender = 'mbendary577@gmail.com', recipients = ['mohamedyossif577@gmail.com'])
+            msg.body = "a new request for ERPNexto implementation partnership, name : "+name+" company : "+companyName+" email : "+email+""
+            with app.open_resource(file_path) as cv_file:
+                msg.attach(implementer_cv, "text/plain", cv_file.read())
+            mail.send(msg)
+        except Exception as e:
+            print('MAIL EXCEPTION =========================================== '+ str(e))
+        return {"message": "your resume was sent successfully, we will contact you soon"}, 200
 
 
 def allowed_file(filename):
