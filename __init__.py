@@ -1,4 +1,5 @@
-import os, sys
+import os
+import sys
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 from flask_mail import Mail, Message
@@ -34,7 +35,7 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USERNAME'] = 'mbendary577@gmail.com'
-app.config['MAIL_PASSWORD'] = 'MohamedBendary@577'
+app.config['MAIL_PASSWORD'] = 'MohamedBendary@566'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_ASCII_ATTACHMENTS'] = True   
@@ -120,27 +121,37 @@ def check_confirmation_code():
 @app.route("/install-erpnexto", methods=['POST'])
 @cross_origin()
 def install_erpnexto():
+    '''
     os.chdir("/var/www/ErpnextoApp/")
     file_path = "/home/cselection"
     my_file = os.path.join(file_path, "file.txt")
     f = open(my_file, "w") 
     f.write(os.getcwd())
+    '''
     request_data = request.get_json()
     site_name = None
     email = None
     password = None
     plan = 'free'
+    print("start installation 0")
     if request_data:
         if 'site_name' in request_data:
+            print("-0")
             site_name = request_data['site_name']
         if 'email' in request_data:
+            print("-1")
             email = request_data['email']
         if 'password' in request_data:
+            print("-2")
             password = request_data['password']
         if 'plan' in request_data['plan']:
+            print("-3")
             plan = request_data['plan']
-        os.system('python script.py '+site_name+" "+email+" "+password+" "+plan)
-        return jsonify(message="you have successfully registered in our system")
+        print("start installation 1")
+        print('python script.py '+site_name+" "+email+" "+password+" "+plan)
+        os.system('python script.py '+site_name+" "+email+" "+password+" "+plan+"")
+        print("start installation 2")
+    return {"message": "you have successfully finished your installation"}, 200
 
 @app.route("/send-quote", methods=['POST'])
 @cross_origin()

@@ -180,7 +180,7 @@ def save_site_to_hosts(domain):
 
 def start_bench(domain):
     print("start bench")
-    pexpect.run("bench --site " + domain + "clear-cache")
+    #pexpect.run("bench --site " + domain + "clear-cache")
     pexpect.run("bench start")
     print("erpnext 0000")
     
@@ -189,9 +189,8 @@ def main(argv):
     #get user data from client registration form
     site_name = argv[0]
     business_mail = argv[1]
-    phone = argv[2]
-    password = argv[3]
-    plan = argv[4]
+    password = argv[2]
+    plan = argv[3]
 
     #get all arguments needed to create a new A dns record
     ip = CONFIG['ip']
@@ -270,9 +269,9 @@ def main(argv):
             logging.exception("creating new record apported :" + str(e))
             sys.exit()
 
-
     domain += '.'+CONFIG['subdomain']
-    if domain_created == 1 : 
+    if domain_created == 1 :
+        print("erpnext 0") 
         old_pwd = os.getcwd()
         os.chdir("/home/cselection/frappe-bench/")
         print("erpnext 1")
@@ -286,14 +285,16 @@ def main(argv):
             site_install_erpnext(plan, domain)
         elif index == 1 : 
             print("expect timout")
-            
+    sys.exit()    
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 5:
-        print("too fre args")
+    print("script 0")
+    '''if len(sys.argv) < 4:
+        print("too few args")
     else:
         sys.exit()
+    '''
     try:
         from config import CONFIG
     except ImportError:
