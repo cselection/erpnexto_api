@@ -59,7 +59,7 @@ def verify_cloudflare_token():
                 data = json.loads(response_data)
                 token_status = data['result']['status']
                 token_expiration_date = data['result']['expires_on']
-                # if token is active and current date is before expiration date, rturn 1
+                # if token is active and current date is before expiration date, return 1
                 if token_status == 'active' and datetime.now().strftime("%d/%m/%Y %H:%M:%S") > token_expiration_date:
                     return 1
             #if request is unauthorized

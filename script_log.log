@@ -1,0 +1,20 @@
+ERROR:root:verify current token exception : 'expires_on'
+Traceback (most recent call last):
+  File "script.py", line 61, in verify_cloudflare_token
+    token_expiration_date = data['result']['expires_on']
+KeyError: 'expires_on'
+ERROR:root:-------------------------------
+Traceback (most recent call last):
+  File "script.py", line 61, in verify_cloudflare_token
+    token_expiration_date = data['result']['expires_on']
+KeyError: 'expires_on'
+ERROR:root:verify current token exception : 'expires_on'
+Traceback (most recent call last):
+  File "script.py", line 61, in verify_cloudflare_token
+    token_expiration_date = data['result']['expires_on']
+KeyError: 'expires_on'
+ERROR:root:-------------------------------
+Traceback (most recent call last):
+  File "script.py", line 61, in verify_cloudflare_token
+    token_expiration_date = data['result']['expires_on']
+KeyError: 'expires_on'
