@@ -3,8 +3,6 @@ import sys
 from subprocess import call
 import time
 import base64
-from urllib.parse import urlencode
-from urllib.request import urlopen,Request
 import xml.etree.ElementTree as etree
 import pexpect
 from python_hosts import Hosts, HostsEntry
@@ -12,6 +10,8 @@ import logging
 import logging.handlers
 import json
 from datetime import datetime, date
+import requests
+from urllib.request import urlopen,Request
 
 '''
 def list_instances(compute, project, zone):
@@ -58,9 +58,8 @@ def verify_cloudflare_token():
                 response_data = response.read().decode(response.info().get_param('charset') or 'utf-8')
                 data = json.loads(response_data)
                 token_status = data['result']['status']
-                token_expiration_date = data['result']['expires_on']
-                # if token is active and current date is before expiration date, return 1
-                if token_status == 'active' and datetime.now().strftime("%d/%m/%Y %H:%M:%S") > token_expiration_date:
+                # if token is active return 1
+                if token_status == 'active':
                     return 1
             #if request is unauthorized
             elif response.getcode() == 403:
@@ -79,7 +78,6 @@ def verify_cloudflare_token():
 def create_new_cloudflare_token():
     try:
         response_dic = {'status' : 404, 'token' : ''}
-        print("0")
         create_new_token_data = {
                                     "name":"readonly token",
                                     "not_before": datetime.now(),
@@ -143,42 +141,86 @@ def create_new_cloudflare_token():
        logging.exception("-------------------------------")
        sys.exit()
 
+
+def site_install_erpnext(plan, domain):
+    print("site install erp next")
+    child = pexpect.spawn("bench --site " + domain + " install-app erpnext", timeout = 3600)
+    index = child.expect([".*\$ ", pexpect.EOF, pexpect.TIMEOUT])
+    if index == 0 or index == 1 : 
+        print("prompt $")
+        site_set_limits(plan, domain)
+    elif index == 2 :
+        print("1 expect timeout")    
+
+def site_set_limits(plan, domain):
+    print("site set limits")
+    if plan == 'free':
+        child = pexpect.spawn("bench --site "+domain+" set-limits --limit users 3 --limit space 0.157", timeout = 3600)
+        index = child.expect([".*\$ ", pexpect.EOF, pexpect.TIMEOUT])
+        if index == 0 or index == 1 : 
+            print("prompt $")
+        elif index == 2 :
+            print("2 1 expect timeout")
+    elif plan == 'standard' or plan == 'microsoft_standard':
+        child = pexpect.spawn("bench --site "+domain+" set-limit users 5")
+        index = child.expect(["$ ", pexpect.EOF, pexpect.TIMEOUT])
+        if index == 0 or index == 1 : 
+            print("prompt $")
+        elif index == 2 :
+            print("2 2 expect timeout")
+    save_site_to_hosts(domain)
+
+def save_site_to_hosts(domain):
+    print("save site to hosts")
+    my_hosts = Hosts()
+    new_entry = HostsEntry(entry_type='ipv4', address='127.0.0.1', names=[domain])
+    my_hosts.add([new_entry])
+    my_hosts.write()
+    start_bench(domain)
+
+def start_bench(domain):
+    print("start bench")
+    #pexpect.run("bench --site " + domain + "clear-cache")
+    pexpect.run("bench start")
+    print("erpnext 0000")
+    
 ####------------------------------------- main method -----------------------------
 def main(argv):
     #get user data from client registration form
     site_name = argv[0]
     business_mail = argv[1]
-    phone = argv[2]
-    password = argv[3]
-    plan = argv[4]
+    password = argv[2]
+    plan = argv[3]
 
     #get all arguments needed to create a new A dns record
     ip = CONFIG['ip']
     ttl = CONFIG['record_ttl']
     record_type = CONFIG['record_type']
-    record_name = site_name
-    if not record_name.endswith('.'):
-        record_name += "."
-    domain = record_name + CONFIG['subdomain']
+    domain = site_name
 
     #prepare some authentication data
+    mysql_username = CONFIG['mysql_username']
     mysql_password = CONFIG['mysql_password']
     admin_password = CONFIG['admin_password']
+    system_password = CONFIG['system_password']
 
     #prepare some helper data
     is_domain_available=0
+    domain_created=0
 
-    # Fetch existing DNS records
+    #---------------------------------------------------------------------------------------------------------#
+    #Fetch existing DNS records on 'erpnexto.com' zone
     try:
         is_token_verified = verify_cloudflare_token()
         access_token = CONFIG['cloudflare_read_zone_token']
         if is_token_verified != 1:
-            print ("token is not equal one ^^^^^^^^^^^^^^^^^^^^66")
+            logging.info("the current token is not verified")
             access_token_dic = create_new_cloudflare_token()
             if access_token_dic['status'] == 200 :
                 access_token = access_token_dic['token']
-        request = Request('https://api.cloudflare.com/client/v4/zones?name='+domain+'&status=active&account.id='+CONFIG['cloudflare_account_id']+'&account.name='+CONFIG['cloudflare_account_name']+'&page=1&per_page=50&order=status&direction=desc&match=all')
-        request.add_header('Authorization', 'Bearer %s' % access_token)
+        request = Request('https://api.cloudflare.com/client/v4/zones/'+CONFIG['erpnexto_zone_id']+'/dns_records?type=CNAME&name='+domain+'&content='+CONFIG['subdomain']+'&proxied=true&page=1&per_page=20&order=type&direction=desc&match=all', method='GET')
+        request.add_header('X-Auth-Key', '9f9fa825aad939ec61cc335bf0a423828856d')
+        request.add_header('X-Auth-Email', 'erpnextosas@gmail.com')
         request.add_header('Content-Type', 'application/json')
         request.add_header('User-Agent', CONFIG['user_agent'])
         with urlopen(request, timeout=20) as response:
@@ -198,64 +240,61 @@ def main(argv):
             else:
                 logging.info("sorry, we couldn't make the request")
     except Exception as e:
-       print('REQUEST EXCEPTION =========================================== '+ str(e))
+       print('FETCH RECORDS REQUEST EXCEPTION =========================================== '+ str(e))
        logging.exception("fetching records exception : " + str(e) + "\n")
        logging.exception("-------------------------------")
        sys.exit()
 
+    #---------------------------------------------------------------------------------------------------------#
+    #add the new cname dns record
+    if is_domain_available == 1 :
+        try:
+            data = { 'type':'CNAME', 'name':domain, 'content':CONFIG['subdomain'], 'ttl':1, 'priority':10, 'proxied':True }
+            headers = {
+                'X-Auth-Key': '9f9fa825aad939ec61cc335bf0a423828856d',
+                'X-Auth-Email' : 'erpnextosas@gmail.com',
+                'Content-Type' : 'application/json',
+                'Accept' : '*/*',
+                'User-Agent' : CONFIG['user_agent']
+                }
+            response = requests.post('https://api.cloudflare.com/client/v4/zones/'+CONFIG['erpnexto_zone_id']+'/dns_records', json=data, headers=headers)
+            response_data = response.json()
+            if response.status_code == requests.codes.ok :
+                domain_created = 1
+                #print(response_data['result'])
+            else :
+                print(response_data['errors'])    
+        except Exception as e:
+            print('CREATE NEW RECORD REQUEST EXCEPTION =========================================== ')
+            logging.exception("creating new record apported :" + str(e))
+            sys.exit()
 
-    #add the new record
-    try:
-        url = CONFIG['url'] + "/xml-api/cpanel?cpanel_xmlapi_module=ZoneEdit&cpanel_xmlapi_func=add_zone_record&cpanel_xmlapi_apiversion=2&domain="+ domain + "&name=" + record_name + "&type=" + record_type + "&ttl=" + ttl + "&address=" + ip
-        logging.info("create new record url " + url)
-        create_record_request = Request(url)
-        create_record_request.add_header('Authorization', auth_string)
-        returned_response = urlopen(create_record_request).read()
-        print('RESPONSE DATA =========================================== %s' % returned_response)
-        returned_response_decoded = returned_response.decode("utf-8")
-        logging.info(returned_response_decoded)
-    except Exception as e:
-        print('RESPONSE EXCEPTION =========================================== ')
-        logging.exception("creating new record apported :" + str(e))
-        sys.exit()
+    domain += '.'+CONFIG['subdomain']
+    if domain_created == 1 :
+        print("erpnext 0") 
+        old_pwd = os.getcwd()
+        os.chdir("/home/cselection/frappe-bench/")
+        print("erpnext 1")
+        pexpect.run("sudo systemctl start mariadb")
+        pexpect.run("bench config dns-mulitenant on")
+        print("erpnext 2")
+        child = pexpect.spawn("bench new-site " + domain + " --admin-password " + password + " --mariadb-root-username " + mysql_username + " --mariadb-root-password " + mysql_password , timeout=3600, encoding='utf-8')
+        index = child.expect([".*\$ ", pexpect.EOF, pexpect.TIMEOUT])
+        if index == 0 or index == 1 : 
+            print("prompt $")
+            site_install_erpnext(plan, domain)
+        elif index == 1 : 
+            print("expect timout")
+    sys.exit()    
 
-    #write bench shell commands to install the new erpnext site
-    child = pexpect.spawn("bench config dns-mulitenant on")
-    child = pexpect.spawn("bench new-site" + site_name)
-    child.expect("MySQL root password:")
-    child.sendline(mysql_password)
-    child.expect("Set Administrator password:")
-    child.sendline(admin_password)
-    child.expect("Re-enter Administrator password:")
-    child.sendline(admin_password)
-    time.sleep(2)
-    child = pexpect.spawn("bench setup nginx")
-    child.expect("[Y/N]:")
-    child.sendline("y")
-    out = subprocess.Popen(['sudo', 'service','nginx', 'reload'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    out = subprocess.Popen(['bench', '--site', site_name, 'install-app', 'erpnext'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
-    if plan == 'free':
-        print('FREE EXCEPTION =========================================== ')
-        out = subprocess.Popen(['bench', '--site', site_name, 'set-limits', '--limit', 'users', 3, '--limit', 'space', 0.157], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    elif plan == 'standard':
-        print('STANDARD EXCEPTION =========================================== ')
-        out = subprocess.Popen(['bench', '--site', site_name, 'set-limit', 'users', 8], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
-    #open /etc/hosts and add the new sub-domain as a new entry
-    my_hosts = Hosts()
-    new_entry = HostsEntry(entry_type='ipv4', address=ip, names=[site_name])
-    my_hosts.add([new_entry])
-    my_hosts.write()
-
-    #start the user erpnext instance
-    out = subprocess.Popen(['bench', 'start'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 5:
-        print("too fre args")
+    print("script 0")
+    '''if len(sys.argv) < 4:
+        print("too few args")
     else:
         sys.exit()
+    '''
     try:
         from config import CONFIG
     except ImportError:
