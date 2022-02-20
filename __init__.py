@@ -41,11 +41,32 @@ app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_ASCII_ATTACHMENTS'] = True   
 mail = Mail(app)
 
+## COMMAND TO SET APP ENV VARIABLE : (linux) export FLASK_APP=__init__.py || (windows) set FLASK_APP=__init__.py || (powershell) $env:FLASK_APP = "__init__.py"
 ## COMMAND TO RUN THE APP : python -m flask run / flask run
 @app.route("/")
 @cross_origin()
 def erpnexto():
     return "<h2>hello erpnexto</h2>"
+
+@app.route("/post_test", methods=['POST'])
+@cross_origin()
+def post_test():
+    request_data = request.get_json()
+    print(request_data)
+    site_name = None
+    username = None
+    password = None
+    if request_data:
+        if 'site_name' in request_data:
+            site_name = request_data['site_name']
+            print(site_name)
+        if 'username' in request_data:
+            username = request_data['username']
+            print(username)
+        if 'password' in request_data:
+            password = request_data['password']
+            print(password)
+    return "<h2>post test</h2>"
 
 @app.route("/signup", methods=['POST'])
 @cross_origin()
